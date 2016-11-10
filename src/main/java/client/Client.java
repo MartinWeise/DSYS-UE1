@@ -2,7 +2,10 @@ package client;
 
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import chatserver.TcpHandler;
 import cli.Command;
 import cli.Shell;
 import util.Config;
@@ -17,6 +20,7 @@ public class Client implements IClientCli, Runnable {
 
 	private Shell shell;
 	Socket socket = null;
+	private ExecutorService pool;
 
 	/**
 	 * @param componentName
@@ -34,6 +38,8 @@ public class Client implements IClientCli, Runnable {
 		this.config = config;
 		this.userRequestStream = userRequestStream;
 		this.userResponseStream = userResponseStream;
+
+		this.pool = Executors.newFixedThreadPool(10);
 
 		/*
 		 * First, create a new Shell instance and provide the name of the
@@ -62,6 +68,18 @@ public class Client implements IClientCli, Runnable {
 		 * Otherwise, the program will not exit.
 		 */
 		new Thread(shell).start();
+		if (socket == null) {
+			try {
+				socket = new Socket(config.getString("chatserver.host"),
+                        config.getInt("chatserver.tcp.port"));
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+		if (!pool.isShutdown()) {
+			pool.execute(new ClientListenHandler(socket));
+		}
 		System.out.println(getClass().getName()
 				+ " up and waiting for commands!");
 	}
@@ -69,53 +87,27 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	@Command
 	public String login(String username, String password) throws IOException {
-		if (socket == null) {
-			socket = new Socket(config.getString("chatserver.host"),
-					config.getInt("chatserver.tcp.port"));
-		}
-		// create a reader to retrieve messages send by the server
-		BufferedReader serverReader = new BufferedReader(
-				new InputStreamReader(socket.getInputStream()));
 		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(
 				socket.getOutputStream(), true);
 		new Log("Sending request: " + "!login " + username + " " + password);
 		serverWriter.println("!login " + username + " " + password);
-		String response = serverReader.readLine();
-		new Log(response);
-		System.out.println(response);
 		return null;
 	}
 
 	@Override
 	@Command
 	public String logout() throws IOException {
-		if (socket == null) {
-			socket = new Socket(config.getString("chatserver.host"),
-					config.getInt("chatserver.tcp.port"));
-		}
-		// create a reader to retrieve messages send by the server
-		BufferedReader serverReader = new BufferedReader(
-				new InputStreamReader(socket.getInputStream()));
 		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(
 				socket.getOutputStream(), true);
-		new Log("Sending request: !logout");
 		serverWriter.println("!logout");
-		System.out.println(serverReader.readLine());
 		return null;
 	}
 
 	@Override
 	@Command
 	public String send(String message) throws IOException {
-		if (socket == null) {
-			socket = new Socket(config.getString("chatserver.host"),
-					config.getInt("chatserver.tcp.port"));
-		}
-		// create a reader to retrieve messages send by the server
-//		BufferedReader serverReader = new BufferedReader(
-//				new InputStreamReader(socket.getInputStream()));
 		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(socket.getOutputStream(), true);
 		serverWriter.println("!send " + message);
@@ -158,12 +150,6 @@ public class Client implements IClientCli, Runnable {
 	
 	@Override
 	public String lastMsg() throws IOException {
-//		if (socket == null) {
-//			socket = new Socket(config.getString("chatserver.host"),
-//					config.getInt("chatserver.tcp.port"));
-//		}
-//		BufferedReader serverReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//		return serverReader.readLine();
 		return null;
 	}
 

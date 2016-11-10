@@ -19,7 +19,6 @@ public class Chatserver implements IChatserverCli, Runnable {
 	private InputStream userRequestStream;
 	private PrintStream userResponseStream;
 
-	protected Thread runningThread = null;
 	protected boolean isStopped = false;
 	private ServerSocket serverSocket;
 	private HashMap<Socket, User> users;

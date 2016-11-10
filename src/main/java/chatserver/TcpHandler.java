@@ -66,6 +66,7 @@ public class TcpHandler implements Runnable {
                             throw new RuntimeException("No such operation: " + parts[0]);
                     }
                     System.out.println("# of clients: " + users.size() + " & " + Arrays.toString(users.values().toArray()));
+                    new Log("# of clients: " + users.size() + " & " + Arrays.toString(users.values().toArray()));
                 }
             }
 
@@ -121,19 +122,15 @@ public class TcpHandler implements Runnable {
         writer.println("Not logged in.");
     }
 
-    private void send(String msg, BufferedReader reader, PrintWriter writer, Socket socket) {
+    private void send(String msg, BufferedReader reader, PrintWriter writer, Socket socket) throws IOException {
         // is user eligible to send broadcasting messages?
         if (users.containsKey(socket)) {
             for (Socket s : users.keySet()) {
                 // send to all users except the demanding one
                 if (!s.equals(socket)) {
-                    try {
-                        PrintWriter tempWriter = new PrintWriter(s.getOutputStream(), true);
-                        tempWriter.println(users.get(s).getName() + ": " + msg);
-                        tempWriter.close();
-                    } catch (IOException e) {
-                        throw new RuntimeException("Error while sending msg", e);
-                    }
+                    System.out.println("Sending -> " + users.get(s).getName() + " msg " + msg);
+                    PrintWriter userWriter = new PrintWriter(s.getOutputStream(), true);
+                    userWriter.println(users.get(socket).getName() + ": " + msg);
                 }
             }
             return;

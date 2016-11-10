@@ -77,3 +77,302 @@
 [13:26:21.161] Client sent request: !send hello
 [13:26:21.162] Request: [!send, hello]
 [13:26:21.163] Error occurred while waiting for/communicating with client: Socket closed
+[12:46:32.692] Sending request: !login foo 1
+[12:46:32.733] Started new TCP thread.
+[12:46:32.740] Client sent request: !login foo 1
+[12:46:32.741] Request: [!login, foo, 1]
+[12:46:32.745] Successfully logged in.
+[12:46:32.747] Successfully logged in.
+[12:46:36.139] Client sent request: !send hello
+[12:46:36.140] Request: [!send, hello]
+[12:47:10.962] Sending request: !login bar 2
+[12:47:11.005] Started new TCP thread.
+[12:47:11.011] Client sent request: !login bar 2
+[12:47:11.012] Request: [!login, bar, 2]
+[12:47:11.016] Successfully logged in.
+[12:47:11.019] Successfully logged in.
+[12:47:25.481] Client sent request: !send hallo
+[12:47:25.482] Request: [!send, hallo]
+[12:54:42.730] Sending request: !login foo 1
+[12:54:42.761] Started new TCP thread.
+[12:54:42.765] Client sent request: !login foo 1
+[12:54:42.766] Request: [!login, foo, 1]
+[12:54:42.770] Successfully logged in.
+[12:54:42.772] # of clients: 1 & [foo, online]
+[12:54:42.773] Successfully logged in.
+[12:54:49.283] Started new TCP thread.
+[12:54:49.285] Sending request: !login bar 2
+[12:54:49.286] Client sent request: !login bar 2
+[12:54:49.287] Request: [!login, bar, 2]
+[12:54:49.287] Successfully logged in.
+[12:54:49.288] # of clients: 2 & [foo, online, bar, online]
+[12:54:49.288] Successfully logged in.
+[12:54:53.815] Client sent request: !send hello
+[12:54:53.816] Request: [!send, hello]
+[12:55:37.562] Error occurred while waiting for/communicating with client: Socket closed
+[12:55:59.851] # of clients: 2 & [foo, online, bar, online]
+[13:02:05.872] Sending request: !login foo 1
+[13:02:05.900] Started new TCP thread.
+[13:02:05.905] Client sent request: !login foo 1
+[13:02:05.906] Request: [!login, foo, 1]
+[13:02:05.910] Successfully logged in.
+[13:02:05.912] # of clients: 1 & [foo, online]
+[13:02:05.912] Successfully logged in.
+[13:02:25.507] Started new TCP thread.
+[13:02:25.508] Sending request: !login bar 2
+[13:02:25.509] Client sent request: !login bar 2
+[13:02:25.510] Request: [!login, bar, 2]
+[13:02:25.510] Successfully logged in.
+[13:02:25.511] # of clients: 2 & [bar, online, foo, online]
+[13:02:25.511] Successfully logged in.
+[13:02:29.165] Client sent request: !send hello
+[13:02:29.166] Request: [!send, hello]
+[13:02:29.167] # of clients: 2 & [bar, online, foo, online]
+[13:03:52.283] Sending request: !login foo 1
+[13:03:52.309] Started new TCP thread.
+[13:03:52.315] Client sent request: !login foo 1
+[13:03:52.316] Request: [!login, foo, 1]
+[13:03:52.319] Successfully logged in.
+[13:03:52.321] # of clients: 1 & [foo, online]
+[13:03:52.321] Successfully logged in.
+[13:04:02.251] Started new TCP thread.
+[13:04:02.252] Sending request: !login bar 2
+[13:04:02.253] Client sent request: !login bar 2
+[13:04:02.254] Request: [!login, bar, 2]
+[13:04:02.254] Successfully logged in.
+[13:04:02.254] # of clients: 2 & [bar, online, foo, online]
+[13:04:02.255] Successfully logged in.
+[13:04:05.621] Client sent request: !send hello
+[13:04:05.622] Request: [!send, hello]
+[13:04:05.623] # of clients: 2 & [bar, online, foo, online]
+[13:05:15.782] Sending request: !login foo 1
+[13:05:15.812] Started new TCP thread.
+[13:05:15.816] Client sent request: !login foo 1
+[13:05:15.817] Request: [!login, foo, 1]
+[13:05:15.821] Successfully logged in.
+[13:05:15.822] # of clients: 1 & [foo, online]
+[13:05:15.822] Successfully logged in.
+[13:05:22.876] Started new TCP thread.
+[13:05:22.878] Sending request: !login bar 2
+[13:05:22.879] Client sent request: !login bar 2
+[13:05:22.879] Request: [!login, bar, 2]
+[13:05:22.880] Successfully logged in.
+[13:05:22.880] # of clients: 2 & [bar, online, foo, online]
+[13:05:22.881] Successfully logged in.
+[13:05:26.465] Client sent request: !send hello
+[13:05:26.465] Request: [!send, hello]
+[13:05:26.467] # of clients: 2 & [bar, online, foo, online]
+[13:05:35.733] Client sent request: !send ola
+[13:05:35.735] Request: [!send, ola]
+[13:05:35.735] # of clients: 2 & [bar, online, foo, online]
+[13:06:17.493] Sending request: !login foo 1
+[13:06:17.520] Started new TCP thread.
+[13:06:17.524] Client sent request: !login foo 1
+[13:06:17.525] Request: [!login, foo, 1]
+[13:06:17.529] Successfully logged in.
+[13:06:17.530] # of clients: 1 & [foo, online]
+[13:06:17.531] Successfully logged in.
+[13:06:20.849] Started new TCP thread.
+[13:06:20.851] Sending request: !login bar 2
+[13:06:20.852] Client sent request: !login bar 2
+[13:06:20.852] Request: [!login, bar, 2]
+[13:06:20.853] Successfully logged in.
+[13:06:20.853] # of clients: 2 & [bar, online, foo, online]
+[13:06:20.854] Successfully logged in.
+[13:06:29.923] Client sent request: !send hello dear
+[13:06:29.924] Request: [!send, hello, dear]
+[13:06:29.925] # of clients: 2 & [bar, online, foo, online]
+[13:07:53.942] Sending request: !login foo 1
+[13:07:53.971] Started new TCP thread.
+[13:07:53.975] Client sent request: !login foo 1
+[13:07:53.976] Request: [!login, foo, 1]
+[13:07:53.979] Successfully logged in.
+[13:07:53.981] # of clients: 1 & [foo, online]
+[13:07:53.982] Successfully logged in.
+[13:07:57.424] Started new TCP thread.
+[13:07:57.426] Sending request: !login bar 2
+[13:07:57.427] Client sent request: !login bar 2
+[13:07:57.427] Request: [!login, bar, 2]
+[13:07:57.428] Successfully logged in.
+[13:07:57.428] # of clients: 2 & [bar, online, foo, online]
+[13:07:57.429] Successfully logged in.
+[13:08:01.716] Client sent request: !send hello dear
+[13:08:01.717] Request: [!send, hello, dear]
+[13:08:01.719] # of clients: 2 & [bar, online, foo, online]
+[13:09:41.958] Sending request: !login bar 2
+[13:09:41.990] Started new TCP thread.
+[13:09:41.994] Client sent request: !login bar 2
+[13:09:41.995] Request: [!login, bar, 2]
+[13:09:41.999] Successfully logged in.
+[13:09:42.001] Successfully logged in.
+[13:09:42.002] # of clients: 1 & [bar, online]
+[13:09:45.465] Started new TCP thread.
+[13:09:45.467] Sending request: !login foo 1
+[13:09:45.468] Client sent request: !login foo 1
+[13:09:45.468] Request: [!login, foo, 1]
+[13:09:45.469] Successfully logged in.
+[13:09:45.469] # of clients: 2 & [foo, online, bar, online]
+[13:09:45.470] Successfully logged in.
+[13:09:50.227] Client sent request: !send hello
+[13:09:50.228] Request: [!send, hello]
+[13:09:50.229] Sending -> foo msg hello
+[13:09:50.230] # of clients: 2 & [foo, online, bar, online]
+[13:11:21.979] Sending request: !login foo 1
+[13:11:22.012] Started new TCP thread.
+[13:11:22.016] Client sent request: !login foo 1
+[13:11:22.017] Request: [!login, foo, 1]
+[13:11:22.022] Successfully logged in.
+[13:11:22.024] # of clients: 1 & [foo, online]
+[13:11:22.025] Successfully logged in.
+[13:11:28.376] Started new TCP thread.
+[13:11:28.378] Sending request: !login bar 2
+[13:11:28.379] Client sent request: !login bar 2
+[13:11:28.380] Request: [!login, bar, 2]
+[13:11:28.380] Successfully logged in.
+[13:11:28.381] # of clients: 2 & [bar, online, foo, online]
+[13:11:28.381] Successfully logged in.
+[13:11:41.946] Started new TCP thread.
+[13:11:41.950] Sending request: !login bar 2
+[13:11:41.951] Client sent request: !login bar 2
+[13:11:41.952] Request: [!login, bar, 2]
+[13:11:41.952] Successfully logged in.
+[13:11:41.953] # of clients: 3 & [bar, online, foo, online, bar, online]
+[13:11:41.956] Successfully logged in.
+[13:21:50.853] Started new TCP thread.
+[13:21:55.524] Sending request: !login foo 1
+[13:21:55.525] Client sent request: !login foo 1
+[13:21:55.526] Request: [!login, foo, 1]
+[13:21:55.528] Successfully logged in.
+[13:21:55.529] # of clients: 1 & [foo, online]
+[13:21:59.620] Started new TCP thread.
+[13:22:03.333] Sending request: !login bar 2
+[13:22:03.335] Client sent request: !login bar 2
+[13:22:03.335] Request: [!login, bar, 2]
+[13:22:03.336] Successfully logged in.
+[13:22:03.336] # of clients: 2 & [bar, online, foo, online]
+[13:22:23.296] Started new TCP thread.
+[13:22:28.289] Sending request: !login bar 2
+[13:22:28.290] Client sent request: !login bar 2
+[13:22:28.291] Request: [!login, bar, 2]
+[13:22:28.291] Successfully logged in.
+[13:22:28.292] # of clients: 3 & [bar, online, bar, online, foo, online]
+[13:22:55.952] Started new TCP thread.
+[13:23:00.726] Sending request: !login foo 1
+[13:23:00.728] Client sent request: !login foo 1
+[13:23:00.729] Request: [!login, foo, 1]
+[13:23:00.730] Successfully logged in.
+[13:23:00.730] # of clients: 4 & [bar, online, foo, online, bar, online, foo, online]
+[13:23:04.940] Started new TCP thread.
+[13:23:07.456] Sending request: !login bar 2
+[13:23:07.457] Client sent request: !login bar 2
+[13:23:07.457] Request: [!login, bar, 2]
+[13:23:07.458] Successfully logged in.
+[13:23:07.458] # of clients: 5 & [bar, online, foo, online, bar, online, foo, online, bar, online]
+[13:23:32.839] null
+[13:23:32.839] null
+[13:24:23.713] Started new TCP thread.
+[13:24:25.367] Started new TCP thread.
+[13:24:27.968] Sending request: !login bar 2
+[13:24:27.969] Client sent request: !login bar 2
+[13:24:27.970] Request: [!login, bar, 2]
+[13:24:27.974] Successfully logged in.
+[13:24:27.975] # of clients: 1 & [bar, online]
+[13:24:31.087] Sending request: !login foo 1
+[13:24:31.088] Client sent request: !login foo 1
+[13:24:31.089] Request: [!login, foo, 1]
+[13:24:31.089] Successfully logged in.
+[13:24:31.089] # of clients: 2 & [bar, online, foo, online]
+[13:25:07.696] Started new TCP thread.
+[13:25:11.606] Started new TCP thread.
+[13:25:14.750] Sending request: !login bar 2
+[13:25:14.751] Client sent request: !login bar 2
+[13:25:14.752] Request: [!login, bar, 2]
+[13:25:14.752] Successfully logged in.
+[13:25:14.752] # of clients: 3 & [bar, online, bar, online, foo, online]
+[13:25:17.932] Sending request: !login foo 1
+[13:25:17.933] Client sent request: !login foo 1
+[13:25:17.934] Request: [!login, foo, 1]
+[13:25:17.935] Successfully logged in.
+[13:25:17.935] # of clients: 4 & [bar, online, bar, online, foo, online, foo, online]
+[13:26:21.415] Started new TCP thread.
+[13:26:27.389] Sending request: !login foo 1
+[13:26:27.390] Client sent request: !login foo 1
+[13:26:27.391] Request: [!login, foo, 1]
+[13:26:27.393] Successfully logged in.
+[13:26:27.394] # of clients: 1 & [foo, online]
+[13:27:26.869] Sending request: !logout
+[13:27:26.870] Client sent request: !logout
+[13:27:26.871] Request: [!logout]
+[13:27:26.873] # of clients: 1 & [foo, offline]
+[13:27:42.884] Started new TCP thread.
+[13:27:47.801] Sending request: !login foo 1
+[13:27:47.802] Client sent request: !login foo 1
+[13:27:47.802] Request: [!login, foo, 1]
+[13:27:47.803] Successfully logged in.
+[13:27:47.804] # of clients: 2 & [foo, offline, foo, online]
+[13:27:52.965] Started new TCP thread.
+[13:27:57.390] Client sent request: !logout
+[13:27:57.391] Request: [!logout]
+[13:27:57.392] # of clients: 2 & [foo, offline, foo, online]
+[13:28:00.864] Sending request: !login bar 2
+[13:28:00.865] Client sent request: !login bar 2
+[13:28:00.866] Request: [!login, bar, 2]
+[13:28:00.866] Successfully logged in.
+[13:28:00.866] # of clients: 3 & [foo, offline, foo, online, bar, online]
+[13:28:52.810] Started new TCP thread.
+[13:28:54.966] Sending request: !login foo 1
+[13:28:54.967] Client sent request: !login foo 1
+[13:28:54.968] Request: [!login, foo, 1]
+[13:28:54.971] Successfully logged in.
+[13:28:54.972] # of clients: 1 & [foo, online]
+[13:32:06.702] Started new TCP thread.
+[13:32:11.151] Sending request: !login bar 2
+[13:32:11.152] Client sent request: !login bar 2
+[13:32:11.152] Request: [!login, bar, 2]
+[13:32:11.155] Successfully logged in.
+[13:32:11.156] # of clients: 1 & [bar, online]
+[13:32:22.375] Started new TCP thread.
+[13:32:24.772] Sending request: !login foo 1
+[13:32:24.772] Client sent request: !login foo 1
+[13:32:24.773] Request: [!login, foo, 1]
+[13:32:24.773] Successfully logged in.
+[13:32:24.774] # of clients: 2 & [foo, online, bar, online]
+[13:32:28.990] Client sent request: !send hello
+[13:32:28.990] Request: [!send, hello]
+[13:32:28.992] # of clients: 2 & [foo, online, bar, online]
+[13:32:48.791] Client sent request: !send hello too how are you?
+[13:32:48.792] Request: [!send, hello, too, how, are, you?]
+[13:32:48.794] # of clients: 2 & [foo, online, bar, online]
+[13:34:05.237] Started new TCP thread.
+[13:34:09.081] Sending request: !login foo 1
+[13:34:09.082] Client sent request: !login foo 1
+[13:34:09.083] Request: [!login, foo, 1]
+[13:34:09.085] Successfully logged in.
+[13:34:09.086] # of clients: 1 & [foo, online]
+[13:34:12.401] Started new TCP thread.
+[13:34:14.699] Sending request: !login bar 2
+[13:34:14.700] Client sent request: !login bar 2
+[13:34:14.700] Request: [!login, bar, 2]
+[13:34:14.701] Successfully logged in.
+[13:34:14.702] # of clients: 2 & [foo, online, bar, online]
+[13:34:21.915] Client sent request: !send hello everyone
+[13:34:21.915] Request: [!send, hello, everyone]
+[13:34:21.917] # of clients: 2 & [foo, online, bar, online]
+[13:34:55.300] Started new TCP thread.
+[13:34:57.868] Sending request: !login foo 1
+[13:34:57.869] Client sent request: !login foo 1
+[13:34:57.870] Request: [!login, foo, 1]
+[13:34:57.872] Successfully logged in.
+[13:34:57.873] # of clients: 1 & [foo, online]
+[13:35:01.003] Started new TCP thread.
+[13:35:04.027] Sending request: !login bar 2
+[13:35:04.028] Client sent request: !login bar 2
+[13:35:04.029] Request: [!login, bar, 2]
+[13:35:04.029] Successfully logged in.
+[13:35:04.029] # of clients: 2 & [foo, online, bar, online]
+[13:35:29.119] Client sent request: !send hello everyone
+[13:35:29.120] Request: [!send, hello, everyone]
+[13:35:29.121] # of clients: 2 & [foo, online, bar, online]
+[13:35:35.382] Client sent request: !send hello bar!
+[13:35:35.382] Request: [!send, hello, bar!]
+[13:35:35.384] # of clients: 2 & [foo, online, bar, online]
