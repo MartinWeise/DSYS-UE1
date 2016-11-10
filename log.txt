@@ -1,0 +1,79 @@
+[23:31:15.488] Sending UDP package to localhost/127.0.0.1:11021
+[23:31:57.498] Sending UDP package to localhost/127.0.0.1:11021
+[00:00:48.558] Sending UDP package to localhost/127.0.0.1:11021
+[00:05:34.463] Sending UDP package to localhost/127.0.0.1:11021
+[13:03:37.760] Sending request: !login foo 1
+[13:09:26.417] Sending request: !login foo 1
+[13:09:37.251] null
+[13:11:02.126] Started new TCP thread.
+[13:11:02.129] Client sent request: !send hello
+[13:11:02.130] Request: [!send, hello]
+[13:11:12.801] Sending request: !login foo 1
+[13:11:12.802] Client sent request: !login foo 1
+[13:11:12.803] Request: [!login, foo, 1]
+[13:11:12.803] Not logged in.
+[13:11:12.806] Successfully logged in.
+[13:11:36.966] Sending request: !login foo 1
+[13:11:36.996] Started new TCP thread.
+[13:11:37.000] Client sent request: !login foo 1
+[13:11:37.001] Request: [!login, foo, 1]
+[13:11:37.005] Successfully logged in.
+[13:11:37.007] Successfully logged in.
+[13:11:41.933] Sending request: !logout
+[13:11:41.934] Client sent request: !logout
+[13:11:41.935] Request: [!logout]
+[13:11:47.288] Sending request: !login bar 2
+[13:11:47.289] Client sent request: !login bar 2
+[13:11:47.290] Request: [!login, bar, 2]
+[13:11:47.291] Successfully logged in.
+[13:11:47.292] Successfully logged in.
+[13:11:53.638] Sending request: !logout
+[13:11:53.639] Client sent request: !logout
+[13:11:53.639] Request: [!logout]
+[13:12:00.019] Sending request: !login foo 1
+[13:12:00.020] Client sent request: !login foo 1
+[13:12:00.021] Request: [!login, foo, 1]
+[13:12:00.021] Successfully logged in.
+[13:12:00.022] Successfully logged in.
+[13:15:08.779] Started new TCP thread.
+[13:15:08.781] Sending request: !login bar 2
+[13:15:08.782] Client sent request: !login bar 2
+[13:15:08.783] Request: [!login, bar, 2]
+[13:15:08.783] Successfully logged in.
+[13:15:08.784] Successfully logged in.
+[13:16:00.776] Client sent request: !send hello
+[13:16:00.778] Request: [!send, hello]
+[13:16:00.780] Error occurred while waiting for/communicating with client: Socket closed
+[13:16:17.423] Sending request: !logout
+[13:16:26.645] Sending request: !logout
+[13:16:26.647] Client sent request: !logout
+[13:16:26.648] Request: [!logout]
+[13:16:39.242] Sending request: !logout
+[13:17:31.500] Started new TCP thread.
+[13:17:31.501] Client sent request: !send hello
+[13:17:31.501] Request: [!send, hello]
+[13:25:30.289] Sending request: !login foo 1
+[13:25:30.314] Started new TCP thread.
+[13:25:30.319] Client sent request: !login foo 1
+[13:25:30.320] Request: [!login, foo, 1]
+[13:25:30.324] Successfully logged in.
+[13:25:30.326] Successfully logged in.
+[13:25:33.018] Client sent request: !send hello
+[13:25:33.018] Request: [!send, hello]
+[13:25:40.396] Sending request: !logout
+[13:25:40.397] Client sent request: !logout
+[13:25:40.397] Request: [!logout]
+[13:26:02.110] Sending request: !login foo 1
+[13:26:02.111] Client sent request: !login foo 1
+[13:26:02.111] Request: [!login, foo, 1]
+[13:26:02.112] Successfully logged in.
+[13:26:02.113] Successfully logged in.
+[13:26:13.923] Started new TCP thread.
+[13:26:13.925] Sending request: !login bar 2
+[13:26:13.926] Client sent request: !login bar 2
+[13:26:13.927] Request: [!login, bar, 2]
+[13:26:13.927] Successfully logged in.
+[13:26:13.928] Successfully logged in.
+[13:26:21.161] Client sent request: !send hello
+[13:26:21.162] Request: [!send, hello]
+[13:26:21.163] Error occurred while waiting for/communicating with client: Socket closed
