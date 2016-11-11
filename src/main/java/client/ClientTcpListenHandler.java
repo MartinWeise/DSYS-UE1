@@ -1,23 +1,24 @@
 package client;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 
-public class ClientListenHandler implements Runnable {
+public class ClientTcpListenHandler implements Runnable {
 
     private Socket socket;
+    private InputStream inputStream;
+    private PrintStream outputStream;
 
-    public ClientListenHandler(Socket socket) {
+    public ClientTcpListenHandler(Socket socket, InputStream inputStream, PrintStream outputStream) {
         this.socket = socket;
+        this.inputStream = inputStream;
+        this.outputStream = outputStream;
     }
 
     @Override
     public void run() {
-        System.out.println("Hello from ClientListenHandler");
         if (socket.isClosed()) {
-            System.err.println("No connection to server. Socket is closed.");
+            outputStream.println("No connection to server. Socket is closed.");
         }
         while (true) {
             BufferedReader reader = null;
@@ -25,7 +26,7 @@ public class ClientListenHandler implements Runnable {
                 reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String in = reader.readLine();
                 if (in != null) {
-                    System.out.println(in);
+                    outputStream.println(in);
                 }
             } catch (IOException e) {
                 e.printStackTrace();

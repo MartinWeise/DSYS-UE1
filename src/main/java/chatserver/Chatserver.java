@@ -16,8 +16,8 @@ public class Chatserver implements IChatserverCli, Runnable {
 
 	private String componentName;
 	private Config config;
-	private InputStream userRequestStream;
-	private PrintStream userResponseStream;
+	private InputStream inputStream;
+	private PrintStream outputStream;
 
 	protected boolean isStopped = false;
 	private ServerSocket serverSocket;
@@ -29,17 +29,17 @@ public class Chatserver implements IChatserverCli, Runnable {
 	 *            the name of the component - represented in the prompt
 	 * @param config
 	 *            the configuration to use
-	 * @param userRequestStream
+	 * @param inputStream
 	 *            the input stream to read user input from
-	 * @param userResponseStream
+	 * @param outputStream
 	 *            the output stream to write the console output to
 	 */
 	public Chatserver(String componentName, Config config,
-			InputStream userRequestStream, PrintStream userResponseStream) {
+			InputStream inputStream, PrintStream outputStream) {
 		this.componentName = componentName;
 		this.config = config;
-		this.userRequestStream = userRequestStream;
-		this.userResponseStream = userResponseStream;
+		this.inputStream = inputStream;
+		this.outputStream = outputStream;
 		this.users = new HashMap<>();
 		this.pool = Executors.newFixedThreadPool(10);
 	}
@@ -59,7 +59,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot listen on TCP port.", e);
 		}
-		System.out.println("Server is up! Hit <ENTER> to exit!");
+		outputStream.println("Server is up! Hit <ENTER> to exit!");
 //		BufferedReader reader = new BufferedReader(new InputStreamReader(
 //				System.in));
 //		try {
@@ -71,7 +71,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 //		}
 		while (!pool.isShutdown()) {
 			try {
-				pool.execute(new TcpHandler(serverSocket.accept(), users));
+				pool.execute(new ChatServerHandler(serverSocket.accept(), users, inputStream, outputStream));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

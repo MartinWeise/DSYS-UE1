@@ -4,27 +4,28 @@ import util.Config;
 import util.Log;
 import util.User;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class TcpHandler implements Runnable {
+public class ChatServerHandler implements Runnable {
 
     private Socket socket;
     private HashMap<Socket, User> users;
+    private InputStream inputStream;
+    private PrintStream outputStream;
 
-    public TcpHandler(Socket socket, HashMap<Socket, User> users) {
+    public ChatServerHandler(Socket socket, HashMap<Socket, User> users,
+                      InputStream inputStream, PrintStream outputStream) {
         this.socket = socket;
         this.users = users;
+        this.inputStream = inputStream;
+        this.outputStream = outputStream;
     }
 
     @Override
     public void run() {
-        new Log("Started new TCP thread.");
         try {
             // wait for Client to connect
             // prepare the input reader for the socket
@@ -39,8 +40,7 @@ public class TcpHandler implements Runnable {
             while (true) {
 
                 if ((request = reader.readLine()) != null) {
-                    System.out.println("Client sent the following request: " + request);
-                    new Log("Client sent request: " + request);
+                    outputStream.println("Client sent the following request: " + request);
 
                     /*
                      * check if request has the correct format: !ping
@@ -61,18 +61,15 @@ public class TcpHandler implements Runnable {
                             send(request.substring(parts[0].length() + 1, request.length()), reader, writer, socket);
                             break;
                         default:
-                            new Log("No such operation: " + parts[0]);
                             writer.println("!error");
                             throw new RuntimeException("No such operation: " + parts[0]);
                     }
-                    System.out.println("# of clients: " + users.size() + " & " + Arrays.toString(users.values().toArray()));
-                    new Log("# of clients: " + users.size() + " & " + Arrays.toString(users.values().toArray()));
+                    outputStream.println("# of clients: " + users.size() + " & " + Arrays.toString(users.values().toArray()));
                 }
             }
 
         } catch (IOException | NullPointerException e) {
-            System.err.println("Error occurred while waiting for/communicating with client: " + e.getMessage() + "\n");
-            new Log("Error occurred while waiting for/communicating with client: " + e.getMessage());
+            outputStream.println("Error occurred while waiting for/communicating with client: " + e.getMessage() + "\n");
         } finally {
             if (socket != null && !socket.isClosed())
                 users.remove(socket);
@@ -91,13 +88,11 @@ public class TcpHandler implements Runnable {
                 && config.getString(parts[1] + ".password").equals(parts[2])) {
             // already logged in
             if (users.get(socket).isOnline()) {
-                new Log("Already logged in.");
                 writer.println("Already logged in.");
                 return;
             }
             // re-logged in
             users.get(socket).setOnline();
-            new Log("Successfully logged in.");
             writer.println("Successfully logged in.");
             return;
         }
@@ -105,11 +100,9 @@ public class TcpHandler implements Runnable {
         if (config.listKeys().contains(parts[1] + ".password")
                 && config.getString(parts[1] + ".password").equals(parts[2])) {
             users.put(socket, new User(parts[1]));
-            new Log("Successfully logged in.");
             writer.println("Successfully logged in.");
             return;
         }
-        new Log("Wrong username or password.");
         writer.println("Wrong username or password.");
     }
 
@@ -128,7 +121,7 @@ public class TcpHandler implements Runnable {
             for (Socket s : users.keySet()) {
                 // send to all users except the demanding one
                 if (!s.equals(socket)) {
-                    System.out.println("Sending -> " + users.get(s).getName() + " msg " + msg);
+                    outputStream.println("Sending -> " + users.get(s).getName() + " msg " + msg);
                     PrintWriter userWriter = new PrintWriter(s.getOutputStream(), true);
                     userWriter.println(users.get(socket).getName() + ": " + msg);
                 }

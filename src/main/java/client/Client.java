@@ -5,7 +5,6 @@ import java.net.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import chatserver.TcpHandler;
 import cli.Command;
 import cli.Shell;
 import util.Config;
@@ -15,8 +14,8 @@ public class Client implements IClientCli, Runnable {
 
 	private String componentName;
 	private Config config;
-	private InputStream userRequestStream;
-	private PrintStream userResponseStream;
+	private InputStream inputStream;
+	private PrintStream outputStream;
 
 	private Shell shell;
 	Socket socket = null;
@@ -27,17 +26,17 @@ public class Client implements IClientCli, Runnable {
 	 *            the name of the component - represented in the prompt
 	 * @param config
 	 *            the configuration to use
-	 * @param userRequestStream
+	 * @param inputStream
 	 *            the input stream to read user input from
-	 * @param userResponseStream
+	 * @param outputStream
 	 *            the output stream to write the console output to
 	 */
 	public Client(String componentName, Config config,
-			InputStream userRequestStream, PrintStream userResponseStream) {
+			InputStream inputStream, PrintStream outputStream) {
 		this.componentName = componentName;
 		this.config = config;
-		this.userRequestStream = userRequestStream;
-		this.userResponseStream = userResponseStream;
+		this.inputStream = inputStream;
+		this.outputStream = outputStream;
 
 		this.pool = Executors.newFixedThreadPool(10);
 
@@ -46,7 +45,7 @@ public class Client implements IClientCli, Runnable {
 		 * component, an InputStream as well as an OutputStream. If you want to
 		 * test the application manually, simply use System.in and System.out.
 		 */
-		this.shell = new Shell(componentName, userRequestStream, userResponseStream);
+		this.shell = new Shell(componentName, inputStream, outputStream);
 		/*
 		 * Next, register all commands the Shell should support. In this example
 		 * this class implements all desired commands.
@@ -78,9 +77,9 @@ public class Client implements IClientCli, Runnable {
 			}
 		}
 		if (!pool.isShutdown()) {
-			pool.execute(new ClientListenHandler(socket));
+			pool.execute(new ClientTcpListenHandler(socket, inputStream, outputStream));
 		}
-		System.out.println(getClass().getName()
+		outputStream.println(getClass().getName()
 				+ " up and waiting for commands!");
 	}
 
@@ -90,7 +89,6 @@ public class Client implements IClientCli, Runnable {
 		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(
 				socket.getOutputStream(), true);
-		new Log("Sending request: " + "!login " + username + " " + password);
 		serverWriter.println("!login " + username + " " + password);
 		return null;
 	}
@@ -117,16 +115,6 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	@Command
 	public String list() throws IOException {
-		int port = 22021;
-		DatagramSocket clientSocket = new DatagramSocket();
-		InetAddress IPAddress = InetAddress.getByName("localhost");
-		byte[] sendData = new byte[1024];
-		byte[] receiveData = new byte[1024];
-		String sentence = "hello from udp";
-		sendData = sentence.getBytes();
-		DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-		clientSocket.send(sendPacket);
-		System.out.println("package sent.");
 		return null;
 	}
 
@@ -178,7 +166,7 @@ public class Client implements IClientCli, Runnable {
 		client.run();
 	}
 
-	// --- Commands needed for Lab 2. Please note that you do not have to
+	// --- Commands needed for Lab 2. Please note that you dFo not have to
 	// implement them for the first submission. ---
 
 	@Override

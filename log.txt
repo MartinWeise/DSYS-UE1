@@ -376,3 +376,9 @@
 [13:35:35.382] Client sent request: !send hello bar!
 [13:35:35.382] Request: [!send, hello, bar!]
 [13:35:35.384] # of clients: 2 & [foo, online, bar, online]
+[00:06:21.011] Started new TCP thread.
+[00:10:41.448] Started new TCP thread.
+[00:10:44.401] Sending request: !login foo 1
+[00:10:44.402] Request: [!login, foo, 1]
+[00:10:52.168] Request: [!send, hello]
+[00:23:22.418] Request: [!login, foo, 1]
