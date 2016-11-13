@@ -5,19 +5,19 @@ import util.Log;
 import util.User;
 
 import java.io.*;
-import java.net.Socket;
+import java.net.*;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class ChatServerHandler implements Runnable {
+public class ChatServerTcpHandler implements Runnable {
 
     private Socket socket;
     private HashMap<Socket, User> users;
     private InputStream inputStream;
     private PrintStream outputStream;
 
-    public ChatServerHandler(Socket socket, HashMap<Socket, User> users,
-                      InputStream inputStream, PrintStream outputStream) {
+    public ChatServerTcpHandler(Socket socket, HashMap<Socket, User> users,
+                                InputStream inputStream, PrintStream outputStream) {
         this.socket = socket;
         this.users = users;
         this.inputStream = inputStream;
@@ -47,8 +47,6 @@ public class ChatServerHandler implements Runnable {
                      * <client-name>
                      */
                     String[] parts = request.split(" ");
-                    new Log("Request: " + Arrays.toString(parts));
-
                     switch (parts[0]) {
                         case "!login":
                             login(parts, reader, writer, socket);

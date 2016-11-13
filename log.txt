@@ -382,3 +382,5 @@
 [00:10:44.402] Request: [!login, foo, 1]
 [00:10:52.168] Request: [!send, hello]
 [00:23:22.418] Request: [!login, foo, 1]
+[00:38:32.803] Request: [!login, foo, 1]
+[00:38:36.188] Request: [!logout]

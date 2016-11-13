@@ -5,7 +5,6 @@ import java.net.*;
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import util.Config;
@@ -21,6 +20,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 
 	protected boolean isStopped = false;
 	private ServerSocket serverSocket;
+	private DatagramSocket udpSocket;
 	private HashMap<Socket, User> users;
 	private ExecutorService pool;
 
@@ -47,9 +47,8 @@ public class Chatserver implements IChatserverCli, Runnable {
 	@Override
 	public void run() {
 		// create and start a new TCP ServerSocket
-		DatagramSocket sock;
 		try {
-			sock = new DatagramSocket(config.getInt("udp.port"));
+			udpSocket = new DatagramSocket(config.getInt("udp.port"));
 		} catch (SocketException e) {
 			throw new RuntimeException("Cannot listen on UDP port.", e);
 		}
@@ -71,7 +70,8 @@ public class Chatserver implements IChatserverCli, Runnable {
 //		}
 		while (!pool.isShutdown()) {
 			try {
-				pool.execute(new ChatServerHandler(serverSocket.accept(), users, inputStream, outputStream));
+				pool.execute(new ChatServerTcpHandler(serverSocket.accept(), users, inputStream, outputStream));
+				pool.execute(new ChatServerUdpHandler(udpSocket, users, inputStream, outputStream));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

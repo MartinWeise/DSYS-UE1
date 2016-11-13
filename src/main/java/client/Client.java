@@ -8,7 +8,6 @@ import java.util.concurrent.Executors;
 import cli.Command;
 import cli.Shell;
 import util.Config;
-import util.Log;
 
 public class Client implements IClientCli, Runnable {
 
@@ -18,7 +17,8 @@ public class Client implements IClientCli, Runnable {
 	private PrintStream outputStream;
 
 	private Shell shell;
-	Socket socket = null;
+	Socket tcpSocket = null;
+	DatagramSocket udpSocket = null;
 	private ExecutorService pool;
 
 	/**
@@ -67,17 +67,24 @@ public class Client implements IClientCli, Runnable {
 		 * Otherwise, the program will not exit.
 		 */
 		new Thread(shell).start();
-		if (socket == null) {
+		if (tcpSocket == null) {
 			try {
-				socket = new Socket(config.getString("chatserver.host"),
+				tcpSocket = new Socket(config.getString("chatserver.host"),
                         config.getInt("chatserver.tcp.port"));
 			} catch (IOException e) {
-				e.printStackTrace();
-				return;
+				throw new RuntimeException("Unable to create TCP socket.", e);
+			}
+		}
+		if (udpSocket == null) {
+			try {
+				udpSocket = new DatagramSocket();
+			} catch (SocketException e) {
+				throw new RuntimeException("Unable to create UDP socket.", e);
 			}
 		}
 		if (!pool.isShutdown()) {
-			pool.execute(new ClientTcpListenHandler(socket, inputStream, outputStream));
+			pool.execute(new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
+			pool.execute(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
 		}
 		outputStream.println(getClass().getName()
 				+ " up and waiting for commands!");
@@ -88,7 +95,7 @@ public class Client implements IClientCli, Runnable {
 	public String login(String username, String password) throws IOException {
 		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(
-				socket.getOutputStream(), true);
+				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!login " + username + " " + password);
 		return null;
 	}
@@ -98,7 +105,7 @@ public class Client implements IClientCli, Runnable {
 	public String logout() throws IOException {
 		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(
-				socket.getOutputStream(), true);
+				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!logout");
 		return null;
 	}
@@ -107,14 +114,17 @@ public class Client implements IClientCli, Runnable {
 	@Command
 	public String send(String message) throws IOException {
 		// create a writer to send messages to the server
-		PrintWriter serverWriter = new PrintWriter(socket.getOutputStream(), true);
+		PrintWriter serverWriter = new PrintWriter(tcpSocket.getOutputStream(), true);
 		serverWriter.println("!send " + message);
 		return null;
 	}
 
-	@Override
 	@Command
 	public String list() throws IOException {
+		byte[] data;
+		data = new String("!list").getBytes();
+		DatagramPacket send = new DatagramPacket(data, data.length, InetAddress.getByName(config.getString("chatserver.host")), config.getInt("chatserver.udp.port"));
+		udpSocket.send(send);
 		return null;
 	}
 
@@ -144,9 +154,9 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	@Command
 	public String exit() throws IOException {
-		if (socket != null) {
+		if (tcpSocket != null) {
 			try {
-				socket.close();
+				tcpSocket.close();
 			} catch (IOException e) {
 				// Ignored because we cannot handle it
 			}
