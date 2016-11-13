@@ -28,7 +28,7 @@ public class User {
     }
 
     public String toString() {
-        return name + ", " + status;
+        return name + " " + status;
     }
 
     public boolean equals(Object o) {

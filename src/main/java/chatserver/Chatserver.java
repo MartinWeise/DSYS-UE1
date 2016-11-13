@@ -7,18 +7,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import cli.Command;
+import cli.Shell;
 import util.Config;
 import util.Log;
 import util.User;
 
 public class Chatserver implements IChatserverCli, Runnable {
 
-	private String componentName;
 	private Config config;
 	private InputStream inputStream;
 	private PrintStream outputStream;
 
-	protected boolean isStopped = false;
+	private Shell shell;
 	private ServerSocket serverSocket;
 	private DatagramSocket udpSocket;
 	private HashMap<Socket, User> users;
@@ -36,16 +37,39 @@ public class Chatserver implements IChatserverCli, Runnable {
 	 */
 	public Chatserver(String componentName, Config config,
 			InputStream inputStream, PrintStream outputStream) {
-		this.componentName = componentName;
 		this.config = config;
 		this.inputStream = inputStream;
 		this.outputStream = outputStream;
 		this.users = new HashMap<>();
 		this.pool = Executors.newFixedThreadPool(10);
+
+		/*
+		 * First, create a new Shell instance and provide the name of the
+		 * component, an InputStream as well as an OutputStream. If you want to
+		 * test the application manually, simply use System.in and System.out.
+		 */
+		this.shell = new Shell(componentName, inputStream, outputStream);
+		/*
+		 * Next, register all commands the Shell should support. In this example
+		 * this class implements all desired commands.
+		 */
+		this.shell.register(this);
 	}
 
 	@Override
 	public void run() {
+		/*
+		 * Finally, make the Shell process the commands read from the
+		 * InputStream by invoking Shell.run(). Note that Shell implements the
+		 * Runnable interface. Thus, you can run the Shell asynchronously by
+		 * starting a new Thread:
+		 *
+		 * Thread shellThread = new Thread(shell); shellThread.start();
+		 *
+		 * In that case, do not forget to terminate the Thread ordinarily.
+		 * Otherwise, the program will not exit.
+		 */
+		new Thread(shell).start();
 		// create and start a new TCP ServerSocket
 		try {
 			udpSocket = new DatagramSocket(config.getInt("udp.port"));
@@ -59,15 +83,6 @@ public class Chatserver implements IChatserverCli, Runnable {
 			throw new RuntimeException("Cannot listen on TCP port.", e);
 		}
 		outputStream.println("Server is up! Hit <ENTER> to exit!");
-//		BufferedReader reader = new BufferedReader(new InputStreamReader(
-//				System.in));
-//		try {
-//			System.out.println(reader.readLine());
-//		} catch (IOException e) {
-//			// IOException from System.in is very very unlikely (or impossible)
-//			// and cannot be handled
-//			throw new RuntimeException("readLine");
-//		}
 		while (!pool.isShutdown()) {
 			try {
 				pool.execute(new ChatServerTcpHandler(serverSocket.accept(), users, inputStream, outputStream));
@@ -85,28 +100,31 @@ public class Chatserver implements IChatserverCli, Runnable {
 	}
 
 	@Override
+	@Command
 	public String users() throws IOException {
 		// TODO Auto-generated method stub
+		String out = "";
+		int i = 1;
+		for (User u : users.values()) {
+			out += (i == 1 ? "" : "\n") + i + ". " + u;
+			i++;
+		}
+		outputStream.println(out);
 		return null;
 	}
 
 	@Override
+	@Command
 	public String exit() throws IOException {
-		if (serverSocket != null) {
-			try {
-				serverSocket.close();
-			} catch (IOException e) {
-				// Ignored because we cannot handle it
-			}
-		}
+		serverSocket.close();
 		// {@url: https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html}
 		pool.shutdown(); // Disable new tasks from being submitted
 		try {
 			// Wait a while for existing tasks to terminate
-			if (!pool.awaitTermination(60, TimeUnit.SECONDS)) {
+			if (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
 				pool.shutdownNow(); // Cancel currently executing tasks
 				// Wait a while for tasks to respond to being cancelled
-				if (!pool.awaitTermination(60, TimeUnit.SECONDS))
+				if (!pool.awaitTermination(1, TimeUnit.SECONDS))
 					System.err.println("Pool did not terminate");
 			}
 		} catch (InterruptedException ie) {
@@ -128,10 +146,6 @@ public class Chatserver implements IChatserverCli, Runnable {
 				new Config("chatserver"), System.in, System.out);
 		// TODO: start the chatserver
 		chatserver.run();
-	}
-
-	protected synchronized boolean isStopped() {
-		return isStopped;
 	}
 
 }
