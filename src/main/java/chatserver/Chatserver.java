@@ -72,7 +72,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 		new Thread(shell).start();
 		// create and start a new TCP ServerSocket
 		try {
-			udpSocket = new DatagramSocket(config.getInt("udp.port"));
+			udpSocket = new DatagramSocket();
 		} catch (SocketException e) {
 			throw new RuntimeException("Cannot listen on UDP port.", e);
 		}
