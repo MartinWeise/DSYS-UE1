@@ -16,22 +16,16 @@ public class Client implements IClientCli, Runnable {
 	private PrintStream outputStream;
 
 	private Shell shell;
-<<<<<<< HEAD
 	private String lastMessage = null;
 
-=======
-	private Socket tcpSocket = null;
->>>>>>> 81863fb1fc701726f2c7eb3c18ddd6d79934841d
 	private DatagramSocket udpSocket = null;
 	private ExecutorService pool;
 	private Socket tcpSocket = null;
+	/* used for holding IOException back when closing the server */
+	private boolean shutdown = false;
 
-	private Future tcpSubmit;
-	private Future udpSubmit;
 
 	private final String LASTMSG_EMPTY = "No message received!";
-
-	private ClientTcpListenHandler tcpRunnable;
 
 	/**
 	 * @param componentName
@@ -95,14 +89,8 @@ public class Client implements IClientCli, Runnable {
 			}
 		}
 		if (!pool.isShutdown()) {
-<<<<<<< HEAD
-			tcpSubmit = pool.submit(new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
-			udpSubmit = pool.submit(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
-=======
-			tcpRunnable = new ClientTcpListenHandler(tcpSocket, inputStream, outputStream);
-			pool.execute(tcpRunnable);
-			pool.execute(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
->>>>>>> 81863fb1fc701726f2c7eb3c18ddd6d79934841d
+			pool.submit(new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
+			pool.submit(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
 		}
 		outputStream.println(getClass().getName()
 				+ " up and waiting for commands!");
@@ -189,48 +177,31 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	@Command
 	public String lastMsg() throws IOException {
-<<<<<<< HEAD
 		if (lastMessage == null) {
 			outputStream.println(LASTMSG_EMPTY);
 			return null;
 		}
 		outputStream.println(lastMessage);
-=======
-		String lastMsg = tcpRunnable.getLastMsg();
-		if (lastMsg == null) {
-			outputStream.println("No message received!");
-			return null;
-		}
-		outputStream.println(tcpRunnable.getLastMsg());
->>>>>>> 81863fb1fc701726f2c7eb3c18ddd6d79934841d
 		return null;
 	}
 
 	@Override
 	@Command
 	public String exit() throws IOException {
-		if (tcpSocket != null) {
-//			try {
-				/* now try to close the TCP listener */
-				tcpSubmit.cancel(true);
-				udpSubmit.cancel(true);
-				if (!tcpSubmit.isCancelled()) {
-					throw new RuntimeException("TCP Listener Thread couldn't be closed.");
-				}
-			outputStream.close();
-			inputStream.close();
-				if (!pool.isShutdown()) {
-					pool.shutdown();
-					if (!pool.isShutdown()) {
-						throw new RuntimeException("Pool couldn't be closed.");
-					}
-				}
-//			} catch (IOException e) {
-//				throw new RuntimeException("exit", e);
-//			}
+		shutdown = true;
+		/* Close TCP connection */
+		tcpSocket.close();
+		/* Close UDP connection */
+		udpSocket.close();
+		/* Shutdown pool */
+		pool.shutdown();
+		if (!pool.isShutdown()) {
+			pool.shutdownNow();
+			if (!pool.isShutdown()) {
+				throw new RuntimeException("Pool couldn't be shut down.");
+			}
 		}
-		this.shell.close();
-		// TODO not working when not logged in first
+		shell.close();
 		return null;
 	}
 

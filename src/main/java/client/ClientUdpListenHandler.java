@@ -28,7 +28,7 @@ public class ClientUdpListenHandler extends Thread {
         try {
             socket.receive(receivePacket);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("recv", e);
         }
         String response = new String(receivePacket.getData(), 0, receivePacket.getLength());
         outputStream.println(response);

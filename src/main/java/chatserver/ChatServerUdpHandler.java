@@ -43,7 +43,8 @@ public class ChatServerUdpHandler implements Runnable {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("IOException while UDP", e);
+//            if (!shutdown)
+//                throw new RuntimeException("IOException while UDP", e);
         } finally {
             if (socket != null && !socket.isClosed())
                 users.remove(socket);

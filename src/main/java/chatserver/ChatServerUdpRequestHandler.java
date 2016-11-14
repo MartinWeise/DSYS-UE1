@@ -29,7 +29,7 @@ public class ChatServerUdpRequestHandler implements Runnable {
                 try {
                     list();
                 } catch (IOException e) {
-                    throw new RuntimeException("list", e);
+//                    throw new RuntimeException("list", e);
                 }
                 break;
             default:
