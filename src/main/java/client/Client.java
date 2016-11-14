@@ -16,8 +16,12 @@ public class Client implements IClientCli, Runnable {
 	private PrintStream outputStream;
 
 	private Shell shell;
+<<<<<<< HEAD
 	private String lastMessage = null;
 
+=======
+	private Socket tcpSocket = null;
+>>>>>>> 81863fb1fc701726f2c7eb3c18ddd6d79934841d
 	private DatagramSocket udpSocket = null;
 	private ExecutorService pool;
 	private Socket tcpSocket = null;
@@ -26,6 +30,8 @@ public class Client implements IClientCli, Runnable {
 	private Future udpSubmit;
 
 	private final String LASTMSG_EMPTY = "No message received!";
+
+	private ClientTcpListenHandler tcpRunnable;
 
 	/**
 	 * @param componentName
@@ -89,8 +95,14 @@ public class Client implements IClientCli, Runnable {
 			}
 		}
 		if (!pool.isShutdown()) {
+<<<<<<< HEAD
 			tcpSubmit = pool.submit(new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
 			udpSubmit = pool.submit(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
+=======
+			tcpRunnable = new ClientTcpListenHandler(tcpSocket, inputStream, outputStream);
+			pool.execute(tcpRunnable);
+			pool.execute(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
+>>>>>>> 81863fb1fc701726f2c7eb3c18ddd6d79934841d
 		}
 		outputStream.println(getClass().getName()
 				+ " up and waiting for commands!");
@@ -177,11 +189,20 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	@Command
 	public String lastMsg() throws IOException {
+<<<<<<< HEAD
 		if (lastMessage == null) {
 			outputStream.println(LASTMSG_EMPTY);
 			return null;
 		}
 		outputStream.println(lastMessage);
+=======
+		String lastMsg = tcpRunnable.getLastMsg();
+		if (lastMsg == null) {
+			outputStream.println("No message received!");
+			return null;
+		}
+		outputStream.println(tcpRunnable.getLastMsg());
+>>>>>>> 81863fb1fc701726f2c7eb3c18ddd6d79934841d
 		return null;
 	}
 
