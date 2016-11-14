@@ -8,6 +8,8 @@ import java.io.*;
 import java.net.*;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ChatServerUdpHandler implements Runnable {
 
@@ -16,12 +18,15 @@ public class ChatServerUdpHandler implements Runnable {
     private InputStream inputStream;
     private PrintStream outputStream;
 
+    private ExecutorService pool;
+
     public ChatServerUdpHandler(DatagramSocket socket, HashMap<Socket, User> users,
                                 InputStream inputStream, PrintStream outputStream) {
         this.socket = socket;
         this.users = users;
         this.inputStream = inputStream;
         this.outputStream = outputStream;
+        this.pool = Executors.newCachedThreadPool();
     }
 
     @Override
@@ -33,15 +38,8 @@ public class ChatServerUdpHandler implements Runnable {
                 receiveData = new byte[4096];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 socket.receive(receivePacket);
-                String[] parts = new String(receiveData, 0, receivePacket.getLength()).split(" ");
-                //                                       ^  ^ very important, otherwise not equal later
-                switch (parts[0]) {
-                    case "!list":
-                        list(socket, receivePacket);
-                        break;
-                    default:
-                        throw new RuntimeException("Unknown command!");
-                }
+                /* [...] each client connection should also be handled in a seperate thread. */
+                pool.submit(new ChatServerUdpRequestHandler(receivePacket, socket, users));
             }
 
         } catch (IOException e) {
@@ -55,17 +53,6 @@ public class ChatServerUdpHandler implements Runnable {
                 // Ignored because we cannot handle it
             }
         }
-    }
-
-    private void list(DatagramSocket socket, DatagramPacket packet) throws IOException {
-        String out = "Online users:";
-        for (User u : users.values()) {
-            out += "\n* " + u.getName();
-        }
-        byte[] data = out.getBytes();
-        DatagramPacket send = new DatagramPacket(data, data.length, packet.getSocketAddress());
-        //System.out.println("UDP -> " + send.getAddress().toString() + " : " + send.getPort());
-        socket.send(send);
     }
 
 }

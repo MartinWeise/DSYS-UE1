@@ -3,9 +3,9 @@ package chatserver;
 import java.io.*;
 import java.net.*;
 import java.util.HashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.concurrent.*;
 
 import cli.Command;
 import cli.Shell;
@@ -23,7 +23,10 @@ public class Chatserver implements IChatserverCli, Runnable {
 	private ServerSocket serverSocket;
 	private DatagramSocket udpSocket;
 	private HashMap<Socket, User> users;
+
 	private ExecutorService pool;
+	private LinkedList<Future> submits;
+	private boolean shutdown = false;
 
 	/**
 	 * @param componentName
@@ -41,7 +44,15 @@ public class Chatserver implements IChatserverCli, Runnable {
 		this.inputStream = inputStream;
 		this.outputStream = outputStream;
 		this.users = new HashMap<>();
-		this.pool = Executors.newFixedThreadPool(10);
+
+		/*
+		 * Creates a thread pool that creates new threads as needed, but will reuse previously
+		 * constructed threads when they are available. These pools will typically improve the
+		 * performance of programs that execute many short-lived asynchronous tasks.
+		 * @url{https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool()}
+		 */
+		this.pool = Executors.newCachedThreadPool();
+		this.submits = new LinkedList<>();
 
 		/*
 		 * First, create a new Shell instance and provide the name of the
@@ -72,7 +83,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 		new Thread(shell).start();
 		// create and start a new TCP ServerSocket
 		try {
-			udpSocket = new DatagramSocket();
+			udpSocket = new DatagramSocket(config.getInt("udp.port"));
 		} catch (SocketException e) {
 			throw new RuntimeException("Cannot listen on UDP port.", e);
 		}
@@ -85,16 +96,17 @@ public class Chatserver implements IChatserverCli, Runnable {
 		outputStream.println("Server is up! Hit <ENTER> to exit!");
 		while (!pool.isShutdown()) {
 			try {
-				pool.execute(new ChatServerTcpHandler(serverSocket.accept(), users, inputStream, outputStream));
-				pool.execute(new ChatServerUdpHandler(udpSocket, users, inputStream, outputStream));
+				submits.add(pool.submit(new ChatServerTcpHandler(serverSocket.accept(), users, inputStream, outputStream)));
+				submits.add(pool.submit(new ChatServerUdpHandler(udpSocket, users, inputStream, outputStream)));
 			} catch (IOException e) {
-				e.printStackTrace();
+				if (!shutdown) {
+					throw new RuntimeException("pool submit", e);
+				}
 			}
 		}
 		try {
 			exit();
 		} catch(IOException e) {
-			new Log("Cannot close server.");
 			throw new RuntimeException("Cannot close server.", e);
 		}
 	}
@@ -116,24 +128,30 @@ public class Chatserver implements IChatserverCli, Runnable {
 	@Override
 	@Command
 	public String exit() throws IOException {
-		serverSocket.close();
-		// {@url: https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/ExecutorService.html}
-		pool.shutdown(); // Disable new tasks from being submitted
-		try {
-			// Wait a while for existing tasks to terminate
-			if (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
-				pool.shutdownNow(); // Cancel currently executing tasks
-				// Wait a while for tasks to respond to being cancelled
-				if (!pool.awaitTermination(1, TimeUnit.SECONDS))
-					System.err.println("Pool did not terminate");
+		shutdown = true;
+		/* Logout each active user */
+		for (Socket s : users.keySet()) {
+			if (!s.isClosed()) {
+				s.close();
+				if (!s.isClosed()) {
+					throw new RuntimeException("Thread couldn't be closed.");
+				}
 			}
-		} catch (InterruptedException ie) {
-			// (Re-)Cancel if current thread also interrupted
-			pool.shutdownNow();
-			// Preserve interrupt status
-			Thread.currentThread().interrupt();
 		}
-		return null;
+		/* Shutdown TCP Socket */
+		serverSocket.close();
+		/* Shutdown UDP Socket */
+		udpSocket.close();
+		/* Shutdown pool */
+		pool.shutdown();
+		if (!pool.isShutdown()) {
+			pool.shutdownNow();
+			if (!pool.isShutdown()) {
+				throw new RuntimeException("Pool couldn't be shut down.");
+			}
+		}
+		shell.close();
+		return "Shut down completed! Bye ..";
 	}
 
 	/**

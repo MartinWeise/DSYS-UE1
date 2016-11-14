@@ -2,8 +2,7 @@ package client;
 
 import java.io.*;
 import java.net.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 import cli.Command;
 import cli.Shell;
@@ -17,9 +16,16 @@ public class Client implements IClientCli, Runnable {
 	private PrintStream outputStream;
 
 	private Shell shell;
-	Socket tcpSocket = null;
-	DatagramSocket udpSocket = null;
+	private String lastMessage = null;
+
+	private DatagramSocket udpSocket = null;
 	private ExecutorService pool;
+	private Socket tcpSocket = null;
+
+	private Future tcpSubmit;
+	private Future udpSubmit;
+
+	private final String LASTMSG_EMPTY = "No message received!";
 
 	/**
 	 * @param componentName
@@ -38,7 +44,7 @@ public class Client implements IClientCli, Runnable {
 		this.inputStream = inputStream;
 		this.outputStream = outputStream;
 
-		this.pool = Executors.newFixedThreadPool(10);
+		this.pool = Executors.newFixedThreadPool(2);
 
 		/*
 		 * First, create a new Shell instance and provide the name of the
@@ -83,8 +89,8 @@ public class Client implements IClientCli, Runnable {
 			}
 		}
 		if (!pool.isShutdown()) {
-			pool.execute(new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
-			pool.execute(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
+			tcpSubmit = pool.submit(new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
+			udpSubmit = pool.submit(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
 		}
 		outputStream.println(getClass().getName()
 				+ " up and waiting for commands!");
@@ -93,7 +99,6 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	@Command
 	public String login(String username, String password) throws IOException {
-		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!login " + username + " " + password);
@@ -103,7 +108,6 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	@Command
 	public String logout() throws IOException {
-		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!logout");
@@ -114,7 +118,8 @@ public class Client implements IClientCli, Runnable {
 	@Command
 	public String send(String message) throws IOException {
 		// create a writer to send messages to the server
-		PrintWriter serverWriter = new PrintWriter(tcpSocket.getOutputStream(), true);
+		PrintWriter serverWriter = new PrintWriter(
+				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!send " + message);
 		return null;
 	}
@@ -122,32 +127,61 @@ public class Client implements IClientCli, Runnable {
 	@Command
 	public String list() throws IOException {
 		byte[] data;
-		data = new String("!list").getBytes();
-		DatagramPacket send = new DatagramPacket(data, data.length, InetAddress.getByName(config.getString("chatserver.host")), config.getInt("chatserver.udp.port"));
+		data = "!list".getBytes();
+		DatagramPacket send = new DatagramPacket(data, data.length,
+				InetAddress.getByName(config.getString("chatserver.host")),
+				config.getInt("chatserver.udp.port"));
 		udpSocket.send(send);
 		return null;
 	}
 
 	@Override
+	@Command
 	public String msg(String username, String message) throws IOException {
-		// TODO Auto-generated method stub
+		// create a writer to send messages to the server
+		PrintWriter serverWriter = new PrintWriter(
+				tcpSocket.getOutputStream(), true);
+		BufferedReader reader = new BufferedReader(
+				new InputStreamReader(tcpSocket.getInputStream()));
+		String address = lookup(username);
+
+		System.out.println(">> " + address);
+		if (address != null) {
+			/* Generate new TCP Socket with user */
+			outputStream.println("Yep.");
+		}
+		outputStream.println("Wrong username or user not reachable.");
 		return null;
 	}
 
 	@Override
+	@Command
 	public String lookup(String username) throws IOException {
-		// TODO Auto-generated method stub
+		// create a writer to send messages to the server
+		PrintWriter serverWriter = new PrintWriter(
+				tcpSocket.getOutputStream(), true);
+
+		serverWriter.println("!lookup " + username);
 		return null;
 	}
 
 	@Override
+	@Command
 	public String register(String privateAddress) throws IOException {
-		// TODO Auto-generated method stub
+		PrintWriter serverWriter = new PrintWriter(
+				tcpSocket.getOutputStream(), true);
+		serverWriter.println("!register " + privateAddress);
 		return null;
 	}
 	
 	@Override
+	@Command
 	public String lastMsg() throws IOException {
+		if (lastMessage == null) {
+			outputStream.println(LASTMSG_EMPTY);
+			return null;
+		}
+		outputStream.println(lastMessage);
 		return null;
 	}
 
@@ -155,13 +189,27 @@ public class Client implements IClientCli, Runnable {
 	@Command
 	public String exit() throws IOException {
 		if (tcpSocket != null) {
-			try {
-				tcpSocket.close();
-			} catch (IOException e) {
-				// Ignored because we cannot handle it
-			}
+//			try {
+				/* now try to close the TCP listener */
+				tcpSubmit.cancel(true);
+				udpSubmit.cancel(true);
+				if (!tcpSubmit.isCancelled()) {
+					throw new RuntimeException("TCP Listener Thread couldn't be closed.");
+				}
+			outputStream.close();
+			inputStream.close();
+				if (!pool.isShutdown()) {
+					pool.shutdown();
+					if (!pool.isShutdown()) {
+						throw new RuntimeException("Pool couldn't be closed.");
+					}
+				}
+//			} catch (IOException e) {
+//				throw new RuntimeException("exit", e);
+//			}
 		}
 		this.shell.close();
+		// TODO not working when not logged in first
 		return null;
 	}
 

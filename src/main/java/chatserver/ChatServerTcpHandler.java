@@ -58,6 +58,12 @@ public class ChatServerTcpHandler implements Runnable {
                             // attach {request string}\{"!send "}
                             send(request.substring(parts[0].length() + 1, request.length()), reader, writer, socket);
                             break;
+                        case "!lookup":
+                            lookup(request.substring(parts[0].length() + 1, request.length()), reader, writer, socket);
+                            break;
+                        case "!register":
+                            register(request.substring(parts[0].length() + 1, request.length()), reader, writer, socket);
+                            break;
                         default:
                             writer.println("!error");
                             throw new RuntimeException("No such operation: " + parts[0]);
@@ -69,12 +75,14 @@ public class ChatServerTcpHandler implements Runnable {
         } catch (IOException | NullPointerException e) {
             outputStream.println("Error occurred while waiting for/communicating with client: " + e.getMessage() + "\n");
         } finally {
-            if (socket != null && !socket.isClosed())
-                users.remove(socket);
             try {
-                socket.close();
+                users.remove(socket);
+                if (!socket.isClosed()) {
+                    socket.close();
+                }
             } catch (IOException | NullPointerException e) {
                 // Ignored because we cannot handle it
+                throw new RuntimeException("Socket couldn't be closed", e);
             }
         }
     }
@@ -104,16 +112,17 @@ public class ChatServerTcpHandler implements Runnable {
         writer.println("Wrong username or password.");
     }
 
-    private void logout(BufferedReader reader, PrintWriter writer, Socket socket) {
+    private void logout(BufferedReader reader, PrintWriter writer, Socket socket) throws IOException {
         if (users.containsKey(socket)) {
             users.get(socket).setOffline();
             writer.println("Successfully logged out.");
+            socket.close();
             return;
         }
         writer.println("Not logged in.");
     }
 
-    private void send(String msg, BufferedReader reader, PrintWriter writer, Socket socket) throws IOException {
+    private void send (String msg, BufferedReader reader, PrintWriter writer, Socket socket) throws IOException {
         // is user eligible to send broadcasting messages?
         if (users.containsKey(socket)) {
             for (Socket s : users.keySet()) {
@@ -128,6 +137,35 @@ public class ChatServerTcpHandler implements Runnable {
         }
         // TODO: error case
         writer.println("Not logged in.");
+    }
+
+    private void lookup (String name, BufferedReader reader, PrintWriter writer, Socket socket) throws IOException {
+        if (!users.containsKey(socket)) {
+            writer.println ("Not logged in.");
+            return;
+        }
+        User found = null;
+        for (User u : users.values()) {
+            if (u.getName().equals(name) && u.getPrivateAddress() != null) {
+                found = u;
+                break;
+            }
+        }
+        if (found != null) {
+            writer.println(found.getPrivateAddress());
+            return;
+        }
+        writer.println("Wrong username or user not registered.");
+    }
+
+    private void register (String privateAddress, BufferedReader reader, PrintWriter writer, Socket socket) throws IOException {
+        if (!users.containsKey(socket)) {
+            writer.println("Not logged in.");
+            return;
+        }
+        users.get(socket).register(privateAddress);
+        writer.println("Successfully registered address for " + users.get(socket).getName() + ".");
+        outputStream.println(privateAddress);
     }
 
 }
