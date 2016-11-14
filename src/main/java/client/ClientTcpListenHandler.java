@@ -8,6 +8,7 @@ public class ClientTcpListenHandler implements Runnable {
     private Socket socket;
     private InputStream inputStream;
     private PrintStream outputStream;
+    private volatile String lastMsg;
 
     public ClientTcpListenHandler(Socket socket, InputStream inputStream, PrintStream outputStream) {
         this.socket = socket;
@@ -25,6 +26,7 @@ public class ClientTcpListenHandler implements Runnable {
             try {
                 reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 String in = reader.readLine();
+                lastMsg = in;
                 if (in != null) {
                     outputStream.println(in);
                 }
@@ -32,5 +34,9 @@ public class ClientTcpListenHandler implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    public synchronized String getLastMsg() {
+        return this.lastMsg;
     }
 }

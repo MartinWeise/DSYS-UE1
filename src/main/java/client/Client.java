@@ -17,9 +17,11 @@ public class Client implements IClientCli, Runnable {
 	private PrintStream outputStream;
 
 	private Shell shell;
-	Socket tcpSocket = null;
-	DatagramSocket udpSocket = null;
+	private Socket tcpSocket = null;
+	private DatagramSocket udpSocket = null;
 	private ExecutorService pool;
+
+	private ClientTcpListenHandler tcpRunnable;
 
 	/**
 	 * @param componentName
@@ -83,7 +85,8 @@ public class Client implements IClientCli, Runnable {
 			}
 		}
 		if (!pool.isShutdown()) {
-			pool.execute(new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
+			tcpRunnable = new ClientTcpListenHandler(tcpSocket, inputStream, outputStream);
+			pool.execute(tcpRunnable);
 			pool.execute(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
 		}
 		outputStream.println(getClass().getName()
@@ -147,7 +150,14 @@ public class Client implements IClientCli, Runnable {
 	}
 	
 	@Override
+	@Command
 	public String lastMsg() throws IOException {
+		String lastMsg = tcpRunnable.getLastMsg();
+		if (lastMsg == null) {
+			outputStream.println("No message received!");
+			return null;
+		}
+		outputStream.println(tcpRunnable.getLastMsg());
 		return null;
 	}
 
