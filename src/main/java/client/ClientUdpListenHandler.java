@@ -22,7 +22,6 @@ public class ClientUdpListenHandler extends Thread {
     }
 
     public void run() {
-        outputStream.println("Hello from UDP Thread.");
         byte[] receiveData = new byte[1024];
         DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
         try {

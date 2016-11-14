@@ -27,7 +27,6 @@ public class ChatServerTcpHandler implements Runnable {
     @Override
     public void run() {
         try {
-            // wait for Client to connect
             // prepare the input reader for the socket
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(socket.getInputStream()));
@@ -127,10 +126,10 @@ public class ChatServerTcpHandler implements Runnable {
         if (users.containsKey(socket)) {
             for (Socket s : users.keySet()) {
                 // send to all users except the demanding one
-                if (!s.equals(socket)) {
-                    outputStream.println("Sending -> " + users.get(s).getName() + " msg " + msg);
+                if (!s.equals(socket) && users.get(s).isOnline()) {
                     PrintWriter userWriter = new PrintWriter(s.getOutputStream(), true);
                     userWriter.println(users.get(socket).getName() + ": " + msg);
+                    /* do not close here -> would lead to closing of all socket I/O */
                 }
             }
             return;

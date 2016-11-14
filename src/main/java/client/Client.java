@@ -23,9 +23,12 @@ public class Client implements IClientCli, Runnable {
 	private Socket tcpSocket = null;
 	/* used for holding IOException back when closing the server */
 	private boolean shutdown = false;
+	private ServerSocket privateChatServer = null;
+	private Future privateChatServerHandler = null;
 
 
 	private final String LASTMSG_EMPTY = "No message received!";
+	private final String REGISTERADDR_MALFORMED = "Please provide a valid <IP:port> address.";
 
 	/**
 	 * @param componentName
@@ -44,7 +47,7 @@ public class Client implements IClientCli, Runnable {
 		this.inputStream = inputStream;
 		this.outputStream = outputStream;
 
-		this.pool = Executors.newFixedThreadPool(2);
+		this.pool = Executors.newFixedThreadPool(3);
 
 		/*
 		 * First, create a new Shell instance and provide the name of the
@@ -111,7 +114,7 @@ public class Client implements IClientCli, Runnable {
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!logout");
-		return null;
+		return exit();
 	}
 
 	@Override
@@ -145,7 +148,6 @@ public class Client implements IClientCli, Runnable {
 				new InputStreamReader(tcpSocket.getInputStream()));
 		String address = lookup(username);
 
-		System.out.println(">> " + address);
 		if (address != null) {
 			/* Generate new TCP Socket with user */
 			outputStream.println("Yep.");
@@ -171,6 +173,22 @@ public class Client implements IClientCli, Runnable {
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!register " + privateAddress);
+		InetAddress address;
+		int port;
+		/* try to parse @argument {privateAddress} into inetaddr and port */
+		String[] parts = privateAddress.split(":");
+
+		if (parts.length != 2) {
+			return REGISTERADDR_MALFORMED;
+		}
+		address = InetAddress.getByName(parts[0]);
+		port = Integer.parseInt(parts[1]);
+
+		closePrivateConnection();
+		/* backlog - requested maximum length of the queue of incoming connections. = 10 */
+		privateChatServer = new ServerSocket(port, 10, address);
+		outputStream.println("aa");
+		privateChatServerHandler = pool.submit(new ClientPrivateListenHandler(privateChatServer.accept(), inputStream, outputStream));
 		return null;
 	}
 	
@@ -191,6 +209,8 @@ public class Client implements IClientCli, Runnable {
 		shutdown = true;
 		/* Close TCP connection */
 		tcpSocket.close();
+		/* Close private TCP connection */
+		closePrivateConnection();
 		/* Close UDP connection */
 		udpSocket.close();
 		/* Shutdown pool */
@@ -202,7 +222,7 @@ public class Client implements IClientCli, Runnable {
 			}
 		}
 		shell.close();
-		return null;
+		return "Bye.";
 	}
 
 	/**
@@ -223,6 +243,19 @@ public class Client implements IClientCli, Runnable {
 	public String authenticate(String username) throws IOException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	private void closePrivateConnection() throws IOException {
+		if (privateChatServerHandler != null) {
+			privateChatServer.close();
+			if (!privateChatServer.isClosed()) {
+				throw new RuntimeException("Couldn't close private TCP socket.");
+			}
+			privateChatServerHandler.cancel(true);
+			if (!privateChatServerHandler.isCancelled()) {
+				throw new RuntimeException("Couldn't close private TCP handler.");
+			}
+		}
 	}
 
 }
