@@ -2,6 +2,7 @@ package client;
 
 import java.io.*;
 import java.net.*;
+import java.nio.Buffer;
 import java.util.concurrent.*;
 
 import cli.Command;
@@ -16,7 +17,6 @@ public class Client implements IClientCli, Runnable {
 	private PrintStream outputStream;
 
 	private Shell shell;
-	private String lastMessage = null;
 
 	private DatagramSocket udpSocket = null;
 	private ExecutorService pool;
@@ -25,10 +25,13 @@ public class Client implements IClientCli, Runnable {
 	private boolean shutdown = false;
 	private ServerSocket privateChatServer = null;
 	private Future privateChatServerHandler = null;
+	private ClientTcpListenHandler tcpListener = null;
+	private String username; // for private messages
 
 
 	private final String LASTMSG_EMPTY = "No message received!";
 	private final String REGISTERADDR_MALFORMED = "Please provide a valid <IP:port> address.";
+	private final String SECRADDR_MALFORMED = "Wrong username or user not reachable.";
 
 	/**
 	 * @param componentName
@@ -92,7 +95,7 @@ public class Client implements IClientCli, Runnable {
 			}
 		}
 		if (!pool.isShutdown()) {
-			pool.submit(new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
+			pool.submit(tcpListener = new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
 			pool.submit(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
 		}
 		outputStream.println(getClass().getName()
@@ -104,6 +107,7 @@ public class Client implements IClientCli, Runnable {
 	public String login(String username, String password) throws IOException {
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
+		this.username = username;
 		serverWriter.println("!login " + username + " " + password);
 		return null;
 	}
@@ -144,16 +148,25 @@ public class Client implements IClientCli, Runnable {
 		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
-		BufferedReader reader = new BufferedReader(
-				new InputStreamReader(tcpSocket.getInputStream()));
-		String address = lookup(username);
 
-		if (address != null) {
-			/* Generate new TCP Socket with user */
-			outputStream.println("Yep.");
+		serverWriter.println("!lookup " + username);
+		/* blocking I/O ahead */
+		String[] parts = tcpListener.getPrivateAddress().split(":");
+
+		if (parts.length != 2) {
+//			outputStream.println("Wrong username or user not reachable.");
+			return SECRADDR_MALFORMED;
 		}
-		outputStream.println("Wrong username or user not reachable.");
-		return null;
+
+		Socket secretSocket = new Socket(InetAddress.getByName(parts[0]), Integer.parseInt(parts[1]));
+		PrintWriter secretWriter = new PrintWriter(
+				secretSocket.getOutputStream(), true);
+		secretWriter.println(this.username + ": " +  message);
+		BufferedReader secretReader = new BufferedReader(new InputStreamReader(secretSocket.getInputStream()));
+		if (secretReader.readLine().equals("!ack")) {
+			return username + " replied with !ack";
+		}
+		return "Wrong username or user not reachable.";
 	}
 
 	@Override
@@ -183,11 +196,11 @@ public class Client implements IClientCli, Runnable {
 		}
 		address = InetAddress.getByName(parts[0]);
 		port = Integer.parseInt(parts[1]);
-
+		/* if already open close first */
 		closePrivateConnection();
+		/* then open a new one */
 		/* backlog - requested maximum length of the queue of incoming connections. = 10 */
 		privateChatServer = new ServerSocket(port, 10, address);
-		outputStream.println("aa");
 		privateChatServerHandler = pool.submit(new ClientPrivateListenHandler(privateChatServer.accept(), inputStream, outputStream));
 		return null;
 	}
@@ -195,6 +208,7 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	@Command
 	public String lastMsg() throws IOException {
+		String lastMessage = tcpListener.getLastMessage();
 		if (lastMessage == null) {
 			outputStream.println(LASTMSG_EMPTY);
 			return null;
@@ -255,6 +269,7 @@ public class Client implements IClientCli, Runnable {
 			if (!privateChatServerHandler.isCancelled()) {
 				throw new RuntimeException("Couldn't close private TCP handler.");
 			}
+			privateChatServerHandler = null;
 		}
 	}
 

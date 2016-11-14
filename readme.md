@@ -9,3 +9,4 @@ aaaa
 - ~~Exit shell Server~~
 - ~~UDP really no fixed port?~~ (Page 6 says no)
 - ~~Close connection on !logout~~ -> close user shell ??
+- msg lookup

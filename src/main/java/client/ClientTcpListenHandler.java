@@ -9,6 +9,8 @@ public class ClientTcpListenHandler implements Runnable {
     private InputStream inputStream;
     private PrintStream outputStream;
     private String lastMessage;
+    private boolean nextIsPrivateAddress = false;
+    private String privateAddress = null;
 
     public ClientTcpListenHandler(Socket socket, InputStream inputStream, PrintStream outputStream) {
         this.socket = socket;
@@ -30,21 +32,30 @@ public class ClientTcpListenHandler implements Runnable {
                     lastMessage = in;
                     if (in != null) {
                         lastMessage = in;
-                        outputStream.println(in);
+                        if (!nextIsPrivateAddress) {
+                            outputStream.println(in);
+                        } else {
+                            /* set back to false so chat keeps showing */
+                            nextIsPrivateAddress = false;
+                            privateAddress = new String(in);
+                        }
                     }
                 }
             } catch (IOException e) {
                 throw new RuntimeException("socket",e);
             }
         }
-        exit();
     }
 
     public synchronized String getLastMessage() {
         return this.lastMessage;
     }
 
-    public void exit() {
-        // TODO
+    public synchronized String getPrivateAddress() {
+        nextIsPrivateAddress = true;
+        while (privateAddress == null) {
+            /* just block, run() makes all the work */
+        }
+        return privateAddress;
     }
 }

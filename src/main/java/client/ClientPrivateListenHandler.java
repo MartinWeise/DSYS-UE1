@@ -29,7 +29,11 @@ public class ClientPrivateListenHandler implements Runnable {
             String request;
             while (!socket.isClosed()) {
                 if ((request = reader.readLine()) != null) {
-                    outputStream.println("Client sent the following request: " + request);
+                    /* private message was sent, reply with !ack */
+                    outputStream.println(request);
+                    writer.println("!ack");
+                    socket.close();
+                    break;
                 }
             }
         } catch (IOException e) {
