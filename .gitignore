@@ -1,1 +1,7 @@
 *.class
+.idea/*
+build/*
+chat.zip
+.project
+.classpath
+.gitignore

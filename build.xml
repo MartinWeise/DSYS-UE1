@@ -46,7 +46,7 @@
 	</target>
 
 	<target name="zip" depends="compile" description="Zip all files">
-		<zip destfile="${build.dir}/chat.zip"
+		<zip destfile="../${build.dir}/chat.zip"
 	       basedir="."
 	       update="true" />
 	</target>
