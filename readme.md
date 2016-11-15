@@ -5,6 +5,7 @@ aaaa
 
 ## Todo
 
+- Testcases!!!
 - ~~Exit shell Client~~
 - ~~Exit shell Server~~
 - ~~UDP really no fixed port?~~ (Page 6 says no)
