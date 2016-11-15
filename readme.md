@@ -5,6 +5,8 @@ aaaa
 
 ## Todo
 
+- Documenation
+- Method documentation
 - Testcases!!!
 - msg synchronity
 
