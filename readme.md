@@ -18,4 +18,4 @@ aaaa
 - `!register <IP:PORT>` ~> NOT LOGGED IN
   further typing (shell) is impossible (broken?)
 - ~~lastMsg~~
-- list (UDP) works really bad if calling a second time
+- ~~list (UDP) works really bad if calling a second time~~

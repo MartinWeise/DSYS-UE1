@@ -89,6 +89,7 @@ public class Client implements IClientCli, Runnable {
 		}
 		if (udpSocket == null) {
 			try {
+				/* has to be empty constructor => Server already uses address */
 				udpSocket = new DatagramSocket();
 			} catch (SocketException e) {
 				throw new RuntimeException("Unable to create UDP socket.", e);
@@ -96,7 +97,7 @@ public class Client implements IClientCli, Runnable {
 		}
 		if (!pool.isShutdown()) {
 			pool.submit(tcpListener = new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
-			pool.submit(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
+			pool.submit(new ClientUdpListenHandler(config, udpSocket, inputStream, outputStream));
 		}
 		outputStream.println(getClass().getName()
 				+ " up and waiting for commands!");
