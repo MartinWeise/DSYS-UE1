@@ -93,7 +93,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot listen on TCP port.", e);
 		}
-		outputStream.println("Server is up! Hit <ENTER> to exit!");
+//		outputStream.println("Server is up! Hit <ENTER> to exit!");
 		while (!pool.isShutdown()) {
 			try {
 				submits.add(pool.submit(new ChatServerTcpHandler(serverSocket.accept(), users, inputStream, outputStream)));

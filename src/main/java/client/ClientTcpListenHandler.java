@@ -31,7 +31,6 @@ public class ClientTcpListenHandler implements Runnable {
                     String in = reader.readLine();
                     outputStream.println(in.indexOf(':'));
                     if (!nextIsPrivateAddress) {
-                        outputStream.println(in);
                         if (in.indexOf(':') != -1) {
                             // it is a public message if it has at least one ':'
                             lastMessage = in;

@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Socket;
+import java.text.Collator;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.TreeSet;
 
 public class ChatServerUdpRequestHandler implements Runnable {
 
@@ -39,12 +42,16 @@ public class ChatServerUdpRequestHandler implements Runnable {
 
     private synchronized void list() throws IOException {
         String out = "Online users:";
-        for (User u : users.values()) {
-            out += "\n* " + u.getName();
+        Collection<String> users = new TreeSet<>(Collator.getInstance());
+        for (User u : this.users.values()) {
+            users.add(u.getName());
+        }
+        /* the collection automatically sorts the strings alphabetical */
+        for (String username : users) {
+            out += "\n* " + username;
         }
         byte[] data = out.getBytes();
         DatagramPacket send = new DatagramPacket(data, data.length, packet.getSocketAddress());
-        System.out.println("UDP -> " + send.getAddress().toString() + " : " + send.getPort());
         socket.send(send);
     }
 }

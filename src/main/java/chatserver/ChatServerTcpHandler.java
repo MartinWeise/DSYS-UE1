@@ -39,7 +39,7 @@ public class ChatServerTcpHandler implements Runnable {
             while (true) {
 
                 if ((request = reader.readLine()) != null) {
-                    outputStream.println("Client sent the following request: " + request);
+//                    outputStream.println("Client sent the following request: " + request);
 
                     /*
                      * check if request has the correct format: !ping
