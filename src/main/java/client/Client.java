@@ -185,7 +185,6 @@ public class Client implements IClientCli, Runnable {
 	public String register(String privateAddress) throws IOException {
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
-		serverWriter.println("!register " + privateAddress);
 		InetAddress address;
 		int port;
 		/* try to parse @argument {privateAddress} into inetaddr and port */
@@ -194,6 +193,8 @@ public class Client implements IClientCli, Runnable {
 		if (parts.length != 2) {
 			return REGISTERADDR_MALFORMED;
 		}
+
+		serverWriter.println("!register " + privateAddress);
 		address = InetAddress.getByName(parts[0]);
 		port = Integer.parseInt(parts[1]);
 		/* if already open close first */

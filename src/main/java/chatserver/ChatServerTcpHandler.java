@@ -67,7 +67,6 @@ public class ChatServerTcpHandler implements Runnable {
                             writer.println("!error");
                             throw new RuntimeException("No such operation: " + parts[0]);
                     }
-                    outputStream.println("# of clients: " + users.size() + " & " + Arrays.toString(users.values().toArray()));
                 }
             }
 

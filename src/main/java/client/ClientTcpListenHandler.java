@@ -29,16 +29,17 @@ public class ClientTcpListenHandler implements Runnable {
                 reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 if (reader.ready()) {
                     String in = reader.readLine();
-                    lastMessage = in;
-                    if (in != null) {
-                        lastMessage = in;
-                        if (!nextIsPrivateAddress) {
-                            outputStream.println(in);
-                        } else {
-                            /* set back to false so chat keeps showing */
-                            nextIsPrivateAddress = false;
-                            privateAddress = new String(in);
+                    outputStream.println(in.indexOf(':'));
+                    if (!nextIsPrivateAddress) {
+                        outputStream.println(in);
+                        if (in.indexOf(':') != -1) {
+                            // it is a public message if it has at least one ':'
+                            lastMessage = in;
                         }
+                    } else {
+                        /* set back to false so chat keeps showing */
+                        nextIsPrivateAddress = false;
+                        privateAddress = in;
                     }
                 }
             } catch (IOException e) {
