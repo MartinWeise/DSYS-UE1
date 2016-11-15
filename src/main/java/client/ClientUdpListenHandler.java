@@ -14,14 +14,18 @@ import java.net.UnknownHostException;
 public class ClientUdpListenHandler extends Thread {
 
     private DatagramSocket socket;
-    private InputStream inputStream;
     private PrintStream outputStream;
     private Config config;
 
-    public ClientUdpListenHandler(Config config, DatagramSocket socket, InputStream inputStream, PrintStream outputStream) {
+    /**
+     * @brief The constructor needed for {@link Client}.
+     * @param config The config file.
+     * @param socket The client Socket.
+     * @param outputStream The Stream for writing responses.
+     */
+    public ClientUdpListenHandler(Config config, DatagramSocket socket, PrintStream outputStream) {
         this.config = config;
         this.socket = socket;
-        this.inputStream = inputStream;
         this.outputStream = outputStream;
     }
 
@@ -30,7 +34,8 @@ public class ClientUdpListenHandler extends Thread {
         DatagramPacket receivePacket;
         while (true) {
             try {
-                receivePacket = new DatagramPacket(receiveData, receiveData.length, InetAddress.getByName(config.getString("chatserver.host")),
+                receivePacket = new DatagramPacket(receiveData, receiveData.length,
+                        InetAddress.getByName(config.getString("chatserver.host")),
                         config.getInt("chatserver.udp.port"));
                 socket.receive(receivePacket);
             } catch (IOException e) {

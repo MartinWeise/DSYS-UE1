@@ -16,25 +16,30 @@ import java.util.concurrent.Executors;
 
 public class ChatServerUdpHandler implements Runnable {
 
-    private DatagramSocket socket;
+    private DatagramSocket socket = null;
     private HashMap<Socket, User> users;
-    private InputStream inputStream;
-    private PrintStream outputStream;
 
-    public ChatServerUdpHandler(DatagramSocket socket, HashMap<Socket, User> users,
-                                InputStream inputStream, PrintStream outputStream) {
+    /**
+     * @brief Constructor needed in {@link Chatserver}.
+     * @param socket The server Socket.
+     * @param users The {@link HashMap<Socket,User>} used to store the users.
+     */
+    public ChatServerUdpHandler(DatagramSocket socket, HashMap<Socket, User> users) {
         this.socket = socket;
         this.users = users;
-        this.inputStream = inputStream;
-        this.outputStream = outputStream;
     }
 
+    /**
+     * @brief The thread entry point & working point.
+     * @detail Need an open {@link DatagramSocket}.
+     * @throws RuntimeException
+     *              When Socket sending/receiving/closing fails.
+     */
     @Override
     public void run() {
         try {
             byte[] receiveData;
-            // read client requests
-            while (true) {
+            while (!socket.isClosed()) {
                 receiveData = new byte[4096];
                 DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
                 /* blocking I/O here */
@@ -67,6 +72,12 @@ public class ChatServerUdpHandler implements Runnable {
         }
     }
 
+    /**
+     * @brief Send a reply to the client with the user list via UDP
+     * @detail Users are printed alphabetical A-Z
+     * @param packet
+     * @throws IOException
+     */
     private synchronized void list(DatagramPacket packet) throws IOException {
         /* Collator implements Comperator => sort alphabetical */
         Collection<String> users = new TreeSet<>(Collator.getInstance());

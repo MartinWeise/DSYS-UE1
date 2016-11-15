@@ -80,8 +80,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 			try {
 				pool.submit(new ChatServerTcpHandler(serverSocket.accept(),
 						users, outputStream));
-				pool.submit(new ChatServerUdpHandler(udpSocket, users,
-						inputStream, outputStream));
+				pool.submit(new ChatServerUdpHandler(udpSocket, users));
 			} catch (IOException e) {
 				if (!shutdown) {
 					throw new RuntimeException("pool submit", e);
