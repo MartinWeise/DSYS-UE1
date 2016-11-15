@@ -119,7 +119,9 @@ public class Client implements IClientCli, Runnable {
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!logout");
-		return exit();
+		tcpListener.shutdownOnSuccess();
+		exit();
+		return null;
 	}
 
 	@Override

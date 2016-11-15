@@ -10,7 +10,10 @@ public class ClientTcpListenHandler implements Runnable {
     private PrintStream outputStream;
     private String lastMessage;
     private boolean nextIsPrivateAddress = false;
+    private boolean shutdown = false;
     private String privateAddress = null;
+
+    private final String LOGOUT_MSG_SUCCESS = "Successfully logged out.";
 
     public ClientTcpListenHandler(Socket socket, InputStream inputStream, PrintStream outputStream) {
         this.socket = socket;
@@ -57,5 +60,15 @@ public class ClientTcpListenHandler implements Runnable {
             /* just block, run() makes all the work */
         }
         return privateAddress;
+    }
+
+    public boolean shutdownOnSuccess() {
+        shutdown = true;
+        nextIsPrivateAddress = true; /* surpress output */
+        while (lastMessage != null && !lastMessage.equals(LOGOUT_MSG_SUCCESS)) {
+            /* just block, run() makes all the work */
+        }
+        outputStream.print(LOGOUT_MSG_SUCCESS);
+        return true;
     }
 }

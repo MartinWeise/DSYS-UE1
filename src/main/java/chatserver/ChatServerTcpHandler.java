@@ -71,10 +71,9 @@ public class ChatServerTcpHandler implements Runnable {
             }
 
         } catch (IOException | NullPointerException e) {
-            outputStream.println("Error occurred while waiting for/communicating with client: " + e.getMessage() + "\n");
+            throw new RuntimeException("Error occurred while waiting for/communicating with client: ", e);
         } finally {
             try {
-                users.remove(socket);
                 if (!socket.isClosed()) {
                     socket.close();
                 }
@@ -133,7 +132,6 @@ public class ChatServerTcpHandler implements Runnable {
             }
             return;
         }
-        // TODO: error case
         writer.println("Not logged in.");
     }
 

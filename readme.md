@@ -6,11 +6,6 @@ aaaa
 ## Todo
 
 - Testcases!!!
-- ~~Exit shell Client~~
-- ~~Exit shell Server~~
-- ~~UDP really no fixed port?~~ (Page 6 says no)
-- ~~Close connection on !logout~~ -> close user shell ??
-- ~~msg lookup~~ ~> msg works now complete
 - msg synchronity
 
   bar: `!msg foo <message>` ~> NOT FOUND
@@ -21,5 +16,3 @@ aaaa
 
 - `!register <IP:PORT>` ~> NOT LOGGED IN
   further typing (shell) is impossible (broken?)
-- ~~lastMsg~~
-- ~~list (UDP) works really bad if calling a second time~~

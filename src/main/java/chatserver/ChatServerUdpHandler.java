@@ -80,7 +80,6 @@ public class ChatServerUdpHandler implements Runnable {
         byte[] data = out.getBytes();
         DatagramPacket send = new DatagramPacket(data, data.length, packet.getSocketAddress());
         socket.send(send);
-        outputStream.println("~> " + packet.getSocketAddress());
     }
 
 }

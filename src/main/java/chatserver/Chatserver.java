@@ -2,9 +2,8 @@ package chatserver;
 
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.text.Collator;
+import java.util.*;
 import java.util.concurrent.*;
 
 import cli.Command;
@@ -113,12 +112,16 @@ public class Chatserver implements IChatserverCli, Runnable {
 
 	@Override
 	@Command
-	public String users() throws IOException {
-		// TODO Auto-generated method stub
+	public synchronized String users() throws IOException {
+		/* Collator implements Comperator => sort alphabetical */
+		Collection<String> users = new TreeSet<>(Collator.getInstance());
+		for (User u : this.users.values()) {
+			users.add(u.toString());
+		}
 		String out = "";
 		int i = 1;
-		for (User u : users.values()) {
-			out += (i == 1 ? "" : "\n") + i + ". " + u;
+		for (String username: users) {
+			out += (i == 1 ? "" : "\n") + i + ". " + username;
 			i++;
 		}
 		outputStream.println(out);
