@@ -6,45 +6,61 @@ import util.User;
 
 import java.io.*;
 import java.net.*;
+import java.text.Collator;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ChatServerUdpHandler implements Runnable {
 
-    private DatagramSocket socket;
+    private DatagramSocket socket = null;
     private HashMap<Socket, User> users;
-    private InputStream inputStream;
-    private PrintStream outputStream;
 
-    private ExecutorService pool;
-
-    public ChatServerUdpHandler(DatagramSocket socket, HashMap<Socket, User> users,
-                                InputStream inputStream, PrintStream outputStream) {
+    /**
+     * @brief Constructor needed in {@link Chatserver}.
+     * @param socket The server Socket.
+     * @param users The {@link HashMap<Socket,User>} used to store the users.
+     */
+    public ChatServerUdpHandler(DatagramSocket socket, HashMap<Socket, User> users) {
         this.socket = socket;
         this.users = users;
-        this.inputStream = inputStream;
-        this.outputStream = outputStream;
-        this.pool = Executors.newCachedThreadPool();
     }
 
+    /**
+     * @brief The thread entry point & working point.
+     * @detail Need an open {@link DatagramSocket}.
+     * @throws RuntimeException
+     *              When Socket sending/receiving/closing fails.
+     */
     @Override
     public void run() {
         try {
             byte[] receiveData;
-            // read client requests
-            while (true) {
+            while (!socket.isClosed()) {
                 receiveData = new byte[4096];
-                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                socket.receive(receivePacket);
-                /* [...] each client connection should also be handled in a seperate thread. */
-                pool.submit(new ChatServerUdpRequestHandler(receivePacket, socket, users));
+                DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
+                /* blocking I/O here */
+                socket.receive(packet);
+                String[] parts = new String(packet.getData(), 0, packet.getLength()).split(" ");
+                //                                       ^  ^ very important, otherwise not equal later
+                switch (parts[0]) {
+                    case "!list":
+                        try {
+                            list(packet);
+                        } catch (IOException e) {
+                            throw new RuntimeException("list", e);
+                        }
+                        break;
+                    default:
+                        throw new RuntimeException("Unknown command!");
+                }
             }
 
         } catch (IOException e) {
-//            if (!shutdown)
-//                throw new RuntimeException("IOException while UDP", e);
+            throw new RuntimeException("IOException while UDP", e);
         } finally {
             if (socket != null && !socket.isClosed())
                 users.remove(socket);
@@ -54,6 +70,27 @@ public class ChatServerUdpHandler implements Runnable {
                 // Ignored because we cannot handle it
             }
         }
+    }
+
+    /**
+     * @brief Send a reply to the client with the user list via UDP
+     * @detail Users are printed alphabetical A-Z
+     * @param packet
+     * @throws IOException
+     */
+    private synchronized void list(DatagramPacket packet) throws IOException {
+        /* Collator implements Comperator => sort alphabetical */
+        Collection<String> users = new TreeSet<>(Collator.getInstance());
+        for (User u : this.users.values()) {
+            users.add(u.getName());
+        }
+        String out = "Online users:";
+        for (String username : users) {
+            out += "\n* " + username;
+        }
+        byte[] data = out.getBytes();
+        DatagramPacket send = new DatagramPacket(data, data.length, packet.getSocketAddress());
+        socket.send(send);
     }
 
 }

@@ -6,15 +6,21 @@ import java.net.Socket;
 public class ClientTcpListenHandler implements Runnable {
 
     private Socket socket;
-    private InputStream inputStream;
     private PrintStream outputStream;
     private String lastMessage;
     private boolean nextIsPrivateAddress = false;
+    private boolean shutdown = false;
     private String privateAddress = null;
 
-    public ClientTcpListenHandler(Socket socket, InputStream inputStream, PrintStream outputStream) {
+    private final String LOGOUT_MSG_SUCCESS = "Successfully logged out.";
+
+    /**
+     * @brief The Constructor needed for {@link Client}.
+     * @param socket The client Socket.
+     * @param outputStream The PrintStream to write output at.
+     */
+    public ClientTcpListenHandler(Socket socket, PrintStream outputStream) {
         this.socket = socket;
-        this.inputStream = inputStream;
         this.outputStream = outputStream;
     }
 
@@ -30,8 +36,9 @@ public class ClientTcpListenHandler implements Runnable {
                 if (reader.ready()) {
                     String in = reader.readLine();
                     if (!nextIsPrivateAddress) {
+                        outputStream.println(in);
                         if (in.indexOf(':') != -1) {
-                            // it is a public message if it has at least one ':'
+                            /* it is a public message if it has at least one ':' */
                             lastMessage = in;
                         }
                     } else {
@@ -46,15 +53,39 @@ public class ClientTcpListenHandler implements Runnable {
         }
     }
 
+    /**
+     * @brief Gets the last public message.
+     * @return Last public message
+     */
     public synchronized String getLastMessage() {
         return this.lastMessage;
     }
 
+    /**
+     * @brief Waits for the private message.
+     * @detail Heavily relies on {@method run}.
+     * @return The private Message.
+     */
     public synchronized String getPrivateAddress() {
         nextIsPrivateAddress = true;
         while (privateAddress == null) {
             /* just block, run() makes all the work */
         }
         return privateAddress;
+    }
+
+    /**
+     * @brief Turn-off the Client program.
+     * @detail Wait for successful logout message.
+     * @return
+     */
+    public boolean shutdownOnSuccess() {
+        shutdown = true;
+        nextIsPrivateAddress = true; /* surpress output */
+        while (lastMessage != null && !lastMessage.equals(LOGOUT_MSG_SUCCESS)) {
+            /* just block, run() makes all the work */
+        }
+        outputStream.print(LOGOUT_MSG_SUCCESS);
+        return true;
     }
 }

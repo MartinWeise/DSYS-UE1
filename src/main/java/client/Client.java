@@ -51,33 +51,18 @@ public class Client implements IClientCli, Runnable {
 		this.outputStream = outputStream;
 
 		this.pool = Executors.newFixedThreadPool(3);
-
-		/*
-		 * First, create a new Shell instance and provide the name of the
-		 * component, an InputStream as well as an OutputStream. If you want to
-		 * test the application manually, simply use System.in and System.out.
-		 */
 		this.shell = new Shell(componentName, inputStream, outputStream);
-		/*
-		 * Next, register all commands the Shell should support. In this example
-		 * this class implements all desired commands.
-		 */
 		this.shell.register(this);
 	}
 
+	/**
+	 * @brief The thread entry & running method
+	 * @throws RuntimeException
+	 * 				Will be thrown since {@link IOException} and {@link SocketException}
+	 * 			    are much more worse to handle.
+	 */
 	@Override
 	public void run() {
-		/*
-		 * Finally, make the Shell process the commands read from the
-		 * InputStream by invoking Shell.run(). Note that Shell implements the
-		 * Runnable interface. Thus, you can run the Shell asynchronously by
-		 * starting a new Thread:
-		 *
-		 * Thread shellThread = new Thread(shell); shellThread.start();
-		 *
-		 * In that case, do not forget to terminate the Thread ordinarily.
-		 * Otherwise, the program will not exit.
-		 */
 		new Thread(shell).start();
 		if (tcpSocket == null) {
 			try {
@@ -89,19 +74,31 @@ public class Client implements IClientCli, Runnable {
 		}
 		if (udpSocket == null) {
 			try {
+				/* has to be empty constructor => Server already uses address */
 				udpSocket = new DatagramSocket();
 			} catch (SocketException e) {
 				throw new RuntimeException("Unable to create UDP socket.", e);
 			}
 		}
 		if (!pool.isShutdown()) {
-			pool.submit(tcpListener = new ClientTcpListenHandler(tcpSocket, inputStream, outputStream));
-			pool.submit(new ClientUdpListenHandler(udpSocket, inputStream, outputStream));
+			pool.submit(tcpListener = new ClientTcpListenHandler(tcpSocket, outputStream));
+			pool.submit(new ClientUdpListenHandler(config, udpSocket, outputStream));
 		}
-		outputStream.println(getClass().getName()
-				+ " up and waiting for commands!");
+		outputStream.println(getClass().getName() + " up and waiting for commands!");
 	}
 
+	/**
+	 * @brief Log-In the user
+	 * @detail Just sends the command and the server does all the work though.
+	 * @param username
+	 *            The name of the user
+	 * @param password
+	 *            The password
+	 * @return
+	 * @throws IOException
+	 * 				The {@link Socket} can throw this exception when the
+	 * 				{@link OutputStream} is damaged (e.g. Socket closed)
+	 */
 	@Override
 	@Command
 	public String login(String username, String password) throws IOException {
@@ -112,25 +109,53 @@ public class Client implements IClientCli, Runnable {
 		return null;
 	}
 
+	/**
+	 * @brief Log-out the user and exit program.
+	 * @detail Just sends the command and the server does all the work though.
+	 * @return
+	 * @throws IOException
+	 * 				The {@link Socket} can throw this exception when the
+	 * 				{@link OutputStream} is damaged (e.g. Socket closed)
+	 */
 	@Override
 	@Command
 	public String logout() throws IOException {
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!logout");
-		return exit();
+		tcpListener.shutdownOnSuccess();
+		exit();
+		return null;
 	}
 
+	/**
+	 * @brief Sends a message (chat message) to all logged-in users.
+	 * @detail Just sends the command and the server does all the work though.
+	 * @param message
+	 * 				The message to send
+	 * @return
+	 * @throws IOException
+	 * 				The {@link Socket} can throw this exception when the
+	 * 				{@link OutputStream} is damaged (e.g. Socket closed)
+	 */
 	@Override
 	@Command
 	public String send(String message) throws IOException {
-		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!send " + message);
 		return null;
 	}
 
+	/**
+	 * @brief Lists all users in alphabetical order.
+	 * @detail Just sends the command and the server does all the work though.
+	 * 				Uses {@link Config} file.
+	 * @return
+	 * @throws IOException
+	 * 				The {@link Socket} can throw this exception when the
+	 * 				{@link OutputStream} is damaged (e.g. Socket closed)
+	 */
 	@Command
 	public String list() throws IOException {
 		byte[] data;
@@ -142,10 +167,22 @@ public class Client implements IClientCli, Runnable {
 		return null;
 	}
 
+	/**
+	 * @brief Sends a private message to a specified user {@arg username}
+	 * @param username
+	 *            User that should receive the private message
+	 * @param message
+	 *            Message to be sent to all online users
+	 *
+	 * @return Responses from the client program
+	 * @throws IOException
+	 * 				When the OutputStream is damaged (e.g. closed Socket) or
+	 * 				the {@var secretWriter} is being closed wrong.
+	 *
+	 */
 	@Override
 	@Command
 	public String msg(String username, String message) throws IOException {
-		// create a writer to send messages to the server
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 
@@ -154,7 +191,6 @@ public class Client implements IClientCli, Runnable {
 		String[] parts = tcpListener.getPrivateAddress().split(":");
 
 		if (parts.length != 2) {
-//			outputStream.println("Wrong username or user not reachable.");
 			return SECRADDR_MALFORMED;
 		}
 
@@ -164,11 +200,23 @@ public class Client implements IClientCli, Runnable {
 		secretWriter.println(this.username + ": " +  message);
 		BufferedReader secretReader = new BufferedReader(new InputStreamReader(secretSocket.getInputStream()));
 		if (secretReader.readLine().equals("!ack")) {
+			secretWriter.close();
 			return username + " replied with !ack";
 		}
+		secretWriter.close();
 		return "Wrong username or user not reachable.";
 	}
 
+	/**
+	 * @brief Perfoms a lookup of given {@var username}.
+	 * @detail Just sends the command and the server does all the work though.
+	 * @param username
+	 *            communication partner of private conversation
+	 * @return
+	 * @throws IOException
+	 * 				The {@link Socket} can throw this exception when the
+	 * 				{@link OutputStream} is damaged (e.g. Socket closed)
+	 */
 	@Override
 	@Command
 	public String lookup(String username) throws IOException {
@@ -180,6 +228,16 @@ public class Client implements IClientCli, Runnable {
 		return null;
 	}
 
+	/**
+	 * @brief Register a address for private messaging.
+	 * @param privateAddress
+	 *            address consisting of 'IP:port' that is used for creating a
+	 *            TCP connection
+	 * @return
+	 * @throws IOException
+	 * 				The {@link Socket} can throw this exception when the
+	 * 				{@link OutputStream} is damaged (e.g. Socket closed)
+	 */
 	@Override
 	@Command
 	public String register(String privateAddress) throws IOException {
@@ -202,22 +260,31 @@ public class Client implements IClientCli, Runnable {
 		/* then open a new one */
 		/* backlog - requested maximum length of the queue of incoming connections. = 10 */
 		privateChatServer = new ServerSocket(port, 10, address);
-		privateChatServerHandler = pool.submit(new ClientPrivateListenHandler(privateChatServer.accept(), inputStream, outputStream));
-		return null;
-	}
-	
-	@Override
-	@Command
-	public String lastMsg() throws IOException {
-		String lastMessage = tcpListener.getLastMessage();
-		if (lastMessage == null) {
-			outputStream.println(LASTMSG_EMPTY);
-			return null;
-		}
-		outputStream.println(lastMessage);
+		privateChatServerHandler = pool.submit(new ClientPrivateListenHandler(
+				privateChatServer.accept(), outputStream));
 		return null;
 	}
 
+	/**
+	 * @brief Prints the last public message received.
+	 * @return last message | ERROR
+	 */
+	@Override
+	@Command
+	public synchronized String lastMsg() {
+		String lastMessage = tcpListener.getLastMessage();
+		if (lastMessage == null) {
+			return LASTMSG_EMPTY;
+		}
+		return lastMessage;
+	}
+
+	/**
+	 * @brief Closes all client connections and exits the program
+	 * @return
+	 * @throws IOException
+	 * 				Closing TCP/UDP can cause a problem.
+	 */
 	@Override
 	@Command
 	public String exit() throws IOException {
@@ -241,25 +308,21 @@ public class Client implements IClientCli, Runnable {
 	}
 
 	/**
+	 * @brief The program entry point
 	 * @param args
 	 *            the first argument is the name of the {@link Client} component
 	 */
 	public static void main(String[] args) {
 		Client client = new Client(args[0], new Config("client"), System.in,
 				System.out);
-		// TODO: start the client
 		client.run();
 	}
 
-	// --- Commands needed for Lab 2. Please note that you dFo not have to
-	// implement them for the first submission. ---
-
-	@Override
-	public String authenticate(String username) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
+	/**
+	 * @brief Close the private Socket which is created by {@method register}.
+	 * @throws IOException
+	 * 				Closing can cause troubles.
+	 */
 	private void closePrivateConnection() throws IOException {
 		if (privateChatServerHandler != null) {
 			privateChatServer.close();
@@ -272,6 +335,15 @@ public class Client implements IClientCli, Runnable {
 			}
 			privateChatServerHandler = null;
 		}
+	}
+
+	// --- Commands needed for Lab 2. Please note that you dFo not have to
+	// implement them for the first submission. ---
+
+	@Override
+	public String authenticate(String username) throws IOException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

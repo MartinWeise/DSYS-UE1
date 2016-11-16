@@ -1,29 +1,36 @@
 package client;
 
 import java.io.*;
-import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 public class ClientPrivateListenHandler implements Runnable {
 
-    private InputStream inputStream;
     private PrintStream outputStream;
     private Socket socket;
 
-    public ClientPrivateListenHandler(Socket socket, InputStream inputStream, PrintStream outputStream) {
+    /**
+     * @brief Constructor needed by {@link Client}.
+     * @param socket Private TCP Socket
+     * @param outputStream PrintStream to write output
+     */
+    public ClientPrivateListenHandler(Socket socket, PrintStream outputStream) {
         this.socket = socket;
-        this.inputStream = inputStream;
         this.outputStream = outputStream;
     }
 
+    /**
+     * @brief The thread entry & running method
+     * @throws RuntimeException
+     * 				Will be thrown since {@link IOException} and {@link SocketException}
+     * 			    are much more worse to handle.
+     */
     @Override
     public void run() {
         try {
-            // prepare the input reader for the socket
             BufferedReader reader = null;
             reader = new BufferedReader(
                     new InputStreamReader(socket.getInputStream()));
-            // prepare the writer for responding to clients requests
             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 
             String request;

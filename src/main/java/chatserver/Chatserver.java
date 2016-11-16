@@ -2,9 +2,8 @@ package chatserver;
 
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.text.Collator;
+import java.util.*;
 import java.util.concurrent.*;
 
 import cli.Command;
@@ -25,7 +24,6 @@ public class Chatserver implements IChatserverCli, Runnable {
 	private HashMap<Socket, User> users;
 
 	private ExecutorService pool;
-	private LinkedList<Future> submits;
 	private boolean shutdown = false;
 
 	/**
@@ -45,59 +43,44 @@ public class Chatserver implements IChatserverCli, Runnable {
 		this.outputStream = outputStream;
 		this.users = new HashMap<>();
 
-		/*
+		/**
 		 * Creates a thread pool that creates new threads as needed, but will reuse previously
 		 * constructed threads when they are available. These pools will typically improve the
 		 * performance of programs that execute many short-lived asynchronous tasks.
-		 * @url{https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool()}
+		 *
+		 * {@url https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool()}
 		 */
 		this.pool = Executors.newCachedThreadPool();
-		this.submits = new LinkedList<>();
 
-		/*
-		 * First, create a new Shell instance and provide the name of the
-		 * component, an InputStream as well as an OutputStream. If you want to
-		 * test the application manually, simply use System.in and System.out.
-		 */
 		this.shell = new Shell(componentName, inputStream, outputStream);
-		/*
-		 * Next, register all commands the Shell should support. In this example
-		 * this class implements all desired commands.
-		 */
 		this.shell.register(this);
 	}
 
+	/**
+	 * @brief Creates TCP/UDP Runnables and execute them
+	 * @throws RuntimeException
+	 * 				We cannot handle other Exception types at runtime
+	 * 				{@link SocketException}, {@link IOException}
+	 */
 	@Override
 	public void run() {
-		/*
-		 * Finally, make the Shell process the commands read from the
-		 * InputStream by invoking Shell.run(). Note that Shell implements the
-		 * Runnable interface. Thus, you can run the Shell asynchronously by
-		 * starting a new Thread:
-		 *
-		 * Thread shellThread = new Thread(shell); shellThread.start();
-		 *
-		 * In that case, do not forget to terminate the Thread ordinarily.
-		 * Otherwise, the program will not exit.
-		 */
 		new Thread(shell).start();
-		// create and start a new TCP ServerSocket
 		try {
 			udpSocket = new DatagramSocket(config.getInt("udp.port"));
 		} catch (SocketException e) {
 			throw new RuntimeException("Cannot listen on UDP port.", e);
 		}
 		try {
-			// handle incoming connections from client in a separate thread
+			/* handle incoming connections from client in a separate thread */
 			serverSocket = new ServerSocket(config.getInt("tcp.port"));
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot listen on TCP port.", e);
 		}
-//		outputStream.println("Server is up! Hit <ENTER> to exit!");
 		while (!pool.isShutdown()) {
 			try {
-				submits.add(pool.submit(new ChatServerTcpHandler(serverSocket.accept(), users, inputStream, outputStream)));
-				submits.add(pool.submit(new ChatServerUdpHandler(udpSocket, users, inputStream, outputStream)));
+				pool.submit(new ChatServerTcpHandler(serverSocket.accept(),
+						users, outputStream));
+				pool.submit(new ChatServerUdpHandler(udpSocket, users));
 			} catch (IOException e) {
 				if (!shutdown) {
 					throw new RuntimeException("pool submit", e);
@@ -111,20 +94,37 @@ public class Chatserver implements IChatserverCli, Runnable {
 		}
 	}
 
+	/**
+	 * @brief Prints out the username (in alphabetical order) and login status
+	 * (online/offine) about each known user
+	 * @return String The list of users
+	 */
 	@Override
 	@Command
-	public String users() throws IOException {
-		// TODO Auto-generated method stub
+	public synchronized String users() {
+		/* Collator implements Comperator => sort alphabetical */
+		Collection<String> users = new TreeSet<>(Collator.getInstance());
+		for (User u : this.users.values()) {
+			users.add(u.toString());
+		}
 		String out = "";
 		int i = 1;
-		for (User u : users.values()) {
-			out += (i == 1 ? "" : "\n") + i + ". " + u;
+		for (String username: users) {
+			out += (i == 1 ? "" : "\n") + i + ". " + username;
 			i++;
 		}
-		outputStream.println(out);
-		return null;
+		return out;
 	}
 
+	/**
+	 * @brief Shutdown the chatserver.
+	 * @detail Loggs out all users, shutdown all connections and close the pool.
+	 * @return String Closing message.
+	 * @throws IOException
+	 * 				When a {@link Socket} cannot be closed.
+	 * @throws RuntimeException
+ 	 * 				If a {@link Socket} or the {@link ExecutorService} cannot be closed.
+	 */
 	@Override
 	@Command
 	public String exit() throws IOException {
@@ -155,14 +155,13 @@ public class Chatserver implements IChatserverCli, Runnable {
 	}
 
 	/**
-	 * @param args
-	 *            the first argument is the name of the {@link Chatserver}
-	 *            component
+	 * @brief The program entry point
+	 * @detail Starts and runs a full chatserver according to the specifications
+	 * @param args The argument Array
 	 */
 	public static void main(String[] args) {
 		Chatserver chatserver = new Chatserver(args[0],
 				new Config("chatserver"), System.in, System.out);
-		// TODO: start the chatserver
 		chatserver.run();
 	}
 

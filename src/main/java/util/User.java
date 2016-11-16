@@ -1,9 +1,5 @@
 package util;
 
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Queue;
-
 public class User {
 
     private enum Status {online, offline};
@@ -11,6 +7,10 @@ public class User {
     private Status status;
     private String privateAddress = null;
 
+    /**
+     * @brief Represents a user
+     * @param name The username
+     */
     public User(String name) {
         this.name = name;
         this.status = Status.online;
