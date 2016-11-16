@@ -29,7 +29,6 @@ public class ClientTcpListenHandler implements Runnable {
                 reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 if (reader.ready()) {
                     String in = reader.readLine();
-                    outputStream.println(in.indexOf(':'));
                     if (!nextIsPrivateAddress) {
                         if (in.indexOf(':') != -1) {
                             // it is a public message if it has at least one ':'

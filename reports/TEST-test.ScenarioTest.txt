@@ -1,41 +1,37 @@
 Testsuite: test.ScenarioTest
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.738 sec
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.843 sec
 ------------- Standard Output ---------------
 00_login_test.txt
-Server is up! Hit <ENTER> to exit!
 client.Client up and waiting for commands!
-01:45:44.181		alice.vienna.at> !login alice.vienna.at 12345
-Client sent the following request: !login alice.vienna.at 12345
+20:51:27.708		alice.vienna.at> !login alice.vienna.at 12345
 -1
-01:45:44.738		alice.vienna.at> !list
+20:51:28.325		alice.vienna.at> !list
 Online users:
 * alice.vienna.at
-01:45:45.255		chatserver> !users
+20:51:28.847		chatserver> !users
 1. alice.vienna.at online
-01:45:45.760		chatserver> !exit
+20:51:29.351		chatserver> !exit
 Error occurred while waiting for/communicating with client: Socket closed
 
-01:45:45.762		chatserver: Shut down completed! Bye ..
-01:45:46.265		alice.vienna.at> !exit
-01:45:46.266		alice.vienna.at: Bye.
+20:51:29.353		chatserver: Shut down completed! Bye ..
+20:51:29.856		alice.vienna.at> !exit
+20:51:29.857		alice.vienna.at: Bye.
 ################################################################################
 ------------- ---------------- ---------------
 ------------- Standard Error -----------------
 AssertionError: String must contain 'success' but was:
 client.client up and waiting for commands!
-01:45:44.181		alice.vienna.at> !login alice.vienna.at 12345
+20:51:27.708		alice.vienna.at> !login alice.vienna.at 12345
 -1
 Expected: a string containing "success"
      but: was "client.client up and waiting for commands!
-01:45:44.181		alice.vienna.at> !login alice.vienna.at 12345
+20:51:27.708		alice.vienna.at> !login alice.vienna.at 12345
 -1"
 AssertionError: String must match pattern '.*alice.*online.*bill.*offline.*' but was:
-Server is up! Hit <ENTER> to exit!
-Client sent the following request: !login alice.vienna.at 12345
-01:45:45.255		chatserver> !users
+20:51:28.847		chatserver> !users
 1. alice.vienna.at online
 Expected: matches pattern .*alice.*online.*bill.*offline.*
-     but: was "Server is up! Hit <ENTER> to exit!\nClient sent the following request: !login alice.vienna.at 12345\n01:45:45.255\t\tchatserver> !users\n1. alice.vienna.at online"
+     but: was "20:51:28.847\t\tchatserver> !users\n1. alice.vienna.at online"
 ------------- ---------------- ---------------
 
-Testcase: 00_login_test took 6.704 sec
+Testcase: 00_login_test took 6.795 sec
