@@ -33,7 +33,7 @@ public class ClientTcpListenHandler implements Runnable {
             BufferedReader reader = null;
             try {
                 reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                if (reader.ready()) {
+                if (true) {
                     String in = reader.readLine();
                     if (!nextIsPrivateAddress) {
                         outputStream.println(in);

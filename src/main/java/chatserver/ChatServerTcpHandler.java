@@ -47,7 +47,7 @@ public class ChatServerTcpHandler implements Runnable {
             writer = new PrintWriter (socket.getOutputStream(), true);
             String request;
 
-            while (reader.ready()) {
+            while (true) {
                 if ((request = reader.readLine()) != null) {
                     String[] parts = request.split(" ");
                     switch (parts[0]) {
