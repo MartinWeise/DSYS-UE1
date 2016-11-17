@@ -13,6 +13,7 @@ The server operates in a single thread with a threadpool that spawns 2 threads (
 ### Client
 
 The client operates in a single thread with a threadpool that spawns 2 threads (TCP/UPD) on start, listening for incoming streams. The pool is of the type `fixedThreadPool` because there will never be more than 3 threads at the same time. When the client types `!register <IP:Port>` the client program spawns a third thread whereas a other client can connect to it over TCP. Every Thread is closed upon `!exit`, not on `!logout` since the task description says "keep as long open as possible".
+Once a private message `!msg <recipient> <message>` is sent to a `!register <recipient>` person, the private socket closes. This is not very effective since the person has to open a private socket for each private message but it is what the task description has 
 
 ## Performance
 
@@ -24,8 +25,11 @@ The client operates in a single thread with a threadpool that spawns 2 threads (
 
 (-) Conditional controlling (depending on server response) is not optimal, e.g. waiting for `!ack`
 
-## Credits
+## Statistics
 
-A lot of effort was put in this code. Please pardon minor coding bugs and/or formatting issues. Have a ☕️ and [create a new issue](https://github.com/MartinWeise/DSYS-UE1/issues/new).
+A lot of effort was put in this code.
+
+- Total ☕ cups: 24
+- Total numbers of code: 2974 (.java files)
 
 [Martin Weise](https://github.com/MartinWeise) &copy; 2016

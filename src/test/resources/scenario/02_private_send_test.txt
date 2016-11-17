@@ -15,7 +15,7 @@ bill.de:            !msg alice.vienna.at Hello alice!
 >                   verify("Wrong username or user not reachable.")
 
 alice.vienna.at:    !register 127.0.0.1:8888
->                   verify("Successfully registered address for alice.vienna.at")
+>                   verify("success")
 
 bill.de:            !lookup alice.vienna.at
 >                   verify("127.0.0.1:8888")

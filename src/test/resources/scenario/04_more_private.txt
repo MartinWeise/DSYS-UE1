@@ -1,0 +1,17 @@
+*   Chatserver      chatserver
+*   Client          alice.vienna.at
+*   Client          bill.de
+
+alice.vienna.at:    !login alice.vienna.at 12345
+
+bill.de:            !login bill.de 23456
+bill.de:            !register 127.0.0.1:8000
+>                   verify("success")
+
+alice.vienna.at:    !msg bill.de Hello Secret!
+
+alice.vienna.at:    !msg bill.de Even more secret.
+
+alice.vienna.at:    !exit
+bill.de:            !exit
+chatserver:         !exit

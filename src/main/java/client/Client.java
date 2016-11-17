@@ -23,7 +23,7 @@ public class Client implements IClientCli, Runnable {
 	private Socket tcpSocket = null;
 	/* used for holding IOException back when closing the server */
 	private boolean shutdown = false;
-	private ServerSocket privateChatServer = null;
+	private volatile ServerSocket privateChatServer = null;
 	private Future privateChatServerHandler = null;
 	private ClientTcpListenHandler tcpListener = null;
 	private String username; // for private messages
@@ -82,7 +82,8 @@ public class Client implements IClientCli, Runnable {
 	 * @brief The thread entry & running method
 	 */
 	@Override
-	public void run() {}
+	public void run() {
+	}
 
 	/**
 	 * @brief Log-In the user
@@ -182,7 +183,6 @@ public class Client implements IClientCli, Runnable {
 				tcpSocket.getOutputStream(), true);
 
 		serverWriter.println("!lookup " + username);
-		/* blocking I/O ahead */
 		String[] parts = tcpListener.getPrivateAddress().split(":");
 
 		if (parts.length != 2) {
@@ -190,16 +190,21 @@ public class Client implements IClientCli, Runnable {
 		}
 
 		Socket secretSocket = new Socket(InetAddress.getByName(parts[0]), Integer.parseInt(parts[1]));
-		PrintWriter secretWriter = new PrintWriter(
-				secretSocket.getOutputStream(), true);
-		secretWriter.println(this.username + ": " +  message);
 		BufferedReader secretReader = new BufferedReader(new InputStreamReader(secretSocket.getInputStream()));
-		if (secretReader.readLine().equals("!ack")) {
-			secretWriter.close();
-			return username + " replied with !ack";
+		PrintWriter secretWriter = new PrintWriter(secretSocket.getOutputStream(), true);
+		/* User -> User Secret Socket */
+		secretWriter.println(this.username + ": " + message);
+		String response;
+		while ((response = secretReader.readLine()) != null) {
+			if (response.equals("!ack")) {
+				secretSocket.close();
+				return username + " replied with !ack";
+			}
+			secretSocket.close();
+			throw new RuntimeException("wrong reply");
 		}
-		outputStream.println("Wrong username or user not reachable.");
-		return null;
+		/* fallbal if wrong response */
+		return SECRADDR_MALFORMED;
 	}
 
 	/**
@@ -249,13 +254,10 @@ public class Client implements IClientCli, Runnable {
 		serverWriter.println("!register " + privateAddress);
 		address = InetAddress.getByName(parts[0]);
 		port = Integer.parseInt(parts[1]);
-		/* if already open close first */
-		closePrivateConnection();
-		/* then open a new one */
 		/* backlog - requested maximum length of the queue of incoming connections. = 10 */
 		privateChatServer = new ServerSocket(port, 10, address);
 		privateChatServerHandler = pool.submit(new ClientPrivateListenHandler(
-				privateChatServer.accept(), outputStream));
+				privateChatServer, outputStream));
 		return null;
 	}
 
