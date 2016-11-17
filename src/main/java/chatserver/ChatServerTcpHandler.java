@@ -209,7 +209,6 @@ public class ChatServerTcpHandler implements Runnable {
         }
         users.get(socket).register(privateAddress);
         writer.println("Successfully registered address for " + users.get(socket).getName() + ".");
-        outputStream.println(privateAddress);
     }
 
 }

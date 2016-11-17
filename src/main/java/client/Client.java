@@ -198,8 +198,8 @@ public class Client implements IClientCli, Runnable {
 			secretWriter.close();
 			return username + " replied with !ack";
 		}
-		secretWriter.close();
-		return "Wrong username or user not reachable.";
+		outputStream.println("Wrong username or user not reachable.");
+		return null;
 	}
 
 	/**

@@ -53,6 +53,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 		this.pool = Executors.newCachedThreadPool();
 		this.shell = new Shell(componentName, inputStream, outputStream);
 		this.shell.register(this);
+		outputStream.println(getClass().getName() + " up and Waiting for commands!");
 	}
 
 	/**
