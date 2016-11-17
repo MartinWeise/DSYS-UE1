@@ -97,7 +97,7 @@ public class ChatServerTcpHandler implements Runnable {
      * @param writer PrintStream for replies.
      * @param socket The user socket.
      */
-    private void login(String[] parts, PrintWriter writer, Socket socket) {
+    private synchronized void login(String[] parts, PrintWriter writer, Socket socket) {
         Config config = new Config("user");
         // check if parts[1]=username already known + password entered is correct
         if (users.containsKey(socket)
@@ -115,6 +115,12 @@ public class ChatServerTcpHandler implements Runnable {
         // check (quick'n'dirty) if user exists in config file
         if (config.listKeys().contains(parts[1] + ".password")
                 && config.getString(parts[1] + ".password").equals(parts[2])) {
+            /* check if user is offline and has a new socket */
+            for (User u: users.values()) {
+                if (u.getName().equals(parts[1]) && !u.isOnline()) {
+                    users.remove(socket);
+                }
+            }
             users.put(socket, new User(parts[1]));
             writer.println("Successfully logged in.");
             return;
@@ -129,11 +135,10 @@ public class ChatServerTcpHandler implements Runnable {
      * @throws IOException
      *              Can be thrown if the socket closing cause an error.
      */
-    private void logout(PrintWriter writer, Socket socket) throws IOException {
+    private synchronized void logout(PrintWriter writer, Socket socket) throws IOException {
         if (users.containsKey(socket)) {
             users.get(socket).setOffline();
             writer.println("Successfully logged out.");
-            socket.close();
             return;
         }
         writer.println("Not logged in.");

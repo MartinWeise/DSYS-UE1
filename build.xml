@@ -8,6 +8,7 @@
 	<property name="test.resources.dir" value="src/test/resources" />
 	<property name="build.dir" value="build" />
 	<property name="reports.dir" value="reports" />
+	<property name="jar.dir" value="jar" />
 
 	<path id="project.classpath">
 		<pathelement location="${build.dir}" />
@@ -45,10 +46,22 @@
 		</junit>
 	</target>
 
-	<target name="zip" depends="compile" description="Zip all files">
-		<zip destfile="../${build.dir}/chat.zip"
-	       basedir="."
-	       update="true" />
+	<target name="jar" depends="compile" description="Makes a jar out of the client and server">
+		<manifestclasspath property="lib.list" jarfile="${jar.dir}/server.jar">
+			<classpath refid="project.classpath"/>
+		</manifestclasspath>
+		<jar destfile="${jar.dir}/server.jar" basedir="${build.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="chatserver.Chatserver" />
+				<attribute name="Class-Path" value="${lib.list}"/>
+			</manifest>
+		</jar>
+		<jar destfile="${jar.dir}/client.jar" basedir="${build.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="client.Client" />
+				<attribute name="Class-Path" value="${lib.list}"/>
+			</manifest>
+		</jar>
 	</target>
 
 	<target name="run-server" depends="compile" description="Run Chatserver.">

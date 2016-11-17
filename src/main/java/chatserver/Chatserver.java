@@ -21,7 +21,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 	private Shell shell;
 	private ServerSocket serverSocket;
 	private DatagramSocket udpSocket;
-	private HashMap<Socket, User> users;
+	private volatile HashMap<Socket, User> users;
 
 	private ExecutorService pool;
 	private boolean shutdown = false;
@@ -51,7 +51,6 @@ public class Chatserver implements IChatserverCli, Runnable {
 		 * {@url https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executors.html#newCachedThreadPool()}
 		 */
 		this.pool = Executors.newCachedThreadPool();
-
 		this.shell = new Shell(componentName, inputStream, outputStream);
 		this.shell.register(this);
 	}
@@ -78,9 +77,10 @@ public class Chatserver implements IChatserverCli, Runnable {
 		}
 		while (!pool.isShutdown()) {
 			try {
-				pool.submit(new ChatServerTcpHandler(serverSocket.accept(),
+				Future a = pool.submit(new ChatServerTcpHandler(serverSocket.accept(),
 						users, outputStream));
 				pool.submit(new ChatServerUdpHandler(udpSocket, users));
+				a.cancel(true);
 			} catch (IOException e) {
 				if (!shutdown) {
 					throw new RuntimeException("pool submit", e);
@@ -151,7 +151,8 @@ public class Chatserver implements IChatserverCli, Runnable {
 			}
 		}
 		shell.close();
-		return "Shut down completed! Bye ..";
+		/* return of a String not possible, shell already closed here. */
+		return null;
 	}
 
 	/**

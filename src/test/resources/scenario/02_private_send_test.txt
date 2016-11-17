@@ -1,12 +1,12 @@
-*	Chatserver	chatserver
-*	Client		alice.vienna.at
-*   Client      bill.de
+*   Chatserver      chatserver
+*   Client          alice.vienna.at
+*   Client          bill.de
 
 bill.de:            !login bill.de 23456
 >                   verify("success")
 
-alice.vienna.at:	  !login alice.vienna.at 12345
->					     verify("success")
+alice.vienna.at:    !login alice.vienna.at 12345
+>                   verify("success")
 
 bill.de:            !lookup alice.vienna.at
 >                   verify("Wrong username or user not registered.")
@@ -14,11 +14,11 @@ bill.de:            !lookup alice.vienna.at
 bill.de:            !msg alice.vienna.at Hello alice!
 >                   verify("Wrong username or user not reachable.")
 
-alice.vienna.at:    !register 128.130.173.160:8888
+alice.vienna.at:    !register 127.0.0.1:8888
 >                   verify("Successfully registered address for alice.vienna.at")
 
 bill.de:            !lookup alice.vienna.at
->                   verify("128.130.173.160:8888")
+>                   verify("127.0.0.1:8888")
 
 ##########################
 # Test private messaging #
@@ -30,6 +30,8 @@ bill.de:            !msg alice.vienna.at Hello alice!
 alice.vienna.at:    !lastMsg
 >                   verify("No message received!")
 
-chatserver: 		!exit
-alice.vienna.at:	!exit
+alice.vienna.at:    !exit
+
 bill.de:            !exit
+
+chatserver:         !exit

@@ -82,7 +82,9 @@ public class ChatServerUdpHandler implements Runnable {
         /* Collator implements Comperator => sort alphabetical */
         Collection<String> users = new TreeSet<>(Collator.getInstance());
         for (User u : this.users.values()) {
-            users.add(u.getName());
+            if (u.isOnline()) {
+                users.add(u.getName());
+            }
         }
         String out = "Online users:";
         for (String username : users) {

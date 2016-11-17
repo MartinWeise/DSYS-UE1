@@ -1,0 +1,92 @@
+*   Client          foo0
+foo0:               !login foo 1
+
+*   Client          foo1
+foo1:               !login foo 1
+
+*   Client          foo2
+foo2:               !login foo 1
+
+*   Client          foo3
+foo3:               !login foo 1
+
+*   Client          foo4
+foo4:               !login foo 1
+
+*   Client          foo5
+foo5:               !login foo 1
+
+*   Client          foo6
+foo6:               !login foo 1
+
+*   Client          foo7
+foo7:               !login foo 1
+
+*   Client          foo8
+foo8:               !login foo 1
+
+*   Client          foo9
+foo9:               !login foo 1
+
+foo0:               !send Hello to everyone!
+
+##############################################
+# Batch Logout
+##############################################
+
+foo0:               !logout
+
+foo1:               !logout
+
+foo2:               !logout
+
+foo3:               !logout
+
+foo4:               !logout
+
+foo5:               !logout
+
+foo6:               !logout
+
+foo7:               !logout
+
+foo8:               !logout
+
+foo9:               !logout
+
+##############################################
+# Batch send
+##############################################
+
+foo0: !send Hello
+
+foo1: !send Waddup
+
+foo7: !send R U OK?
+
+foo4: !send Right m8!
+
+##############################################
+# Batch Exit
+##############################################
+
+
+foo0:               !exit
+
+foo1:               !exit
+
+foo2:               !exit
+
+foo3:               !exit
+
+foo4:               !exit
+
+foo5:               !exit
+
+foo6:               !exit
+
+foo7:               !exit
+
+foo8:               !exit
+
+foo9:               !exit

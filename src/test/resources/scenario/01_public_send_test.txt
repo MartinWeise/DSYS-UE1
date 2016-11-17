@@ -1,14 +1,14 @@
-*	Chatserver	chatserver
-*	Client		alice.vienna.at
-*   Client      bill.de
-*   Client      guenter.nl
-*   Client      sieglinde.usa
+*   Chatserver      chatserver
+*   Client          alice.vienna.at
+*   Client          bill.de
+*   Client          guenter.nl
+*   Client          sieglinde.usa
 
 bill.de:            !login bill.de 23456
 >                   verify("success")
 
-alice.vienna.at:	  !login alice.vienna.at 12345
->					     verify("success")
+alice.vienna.at:    !login alice.vienna.at 12345
+>                   verify("success")
 
 guenter.nl:         !login guenter.nl borkbork
 >                   verify("success")
@@ -20,8 +20,8 @@ sieglinde.usa:      !login sieglinde.usa murrica
 # All users finally logged in #
 ###############################
 
-alice.vienna.at:	  !list
->					     verify(".*alice.*bill.*guenter.*sieglinde.*", T(test.util.Flag).REGEX)
+alice.vienna.at:    !list
+>                   verify(".*alice.*bill.*guenter.*sieglinde.*", T(test.util.Flag).REGEX)
 
 # Verify that all online users (4/4) get the same message except for bill.de
 
@@ -51,8 +51,8 @@ sieglinde.usa:      !lastMsg
 >                   verify("bill.de: Hello everyone! Welcome to public_send_test!")
 
 
-chatserver: 		  !exit
-alice.vienna.at:	  !exit
+chatserver:         !exit
+alice.vienna.at:    !exit
 bill.de:            !exit
 guenter.nl:         !exit
 sieglinde.usa:      !exit

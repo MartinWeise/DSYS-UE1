@@ -53,21 +53,12 @@ public class Client implements IClientCli, Runnable {
 		this.pool = Executors.newFixedThreadPool(3);
 		this.shell = new Shell(componentName, inputStream, outputStream);
 		this.shell.register(this);
-	}
 
-	/**
-	 * @brief The thread entry & running method
-	 * @throws RuntimeException
-	 * 				Will be thrown since {@link IOException} and {@link SocketException}
-	 * 			    are much more worse to handle.
-	 */
-	@Override
-	public void run() {
 		new Thread(shell).start();
 		if (tcpSocket == null) {
 			try {
 				tcpSocket = new Socket(config.getString("chatserver.host"),
-                        config.getInt("chatserver.tcp.port"));
+						config.getInt("chatserver.tcp.port"));
 			} catch (IOException e) {
 				throw new RuntimeException("Unable to create TCP socket.", e);
 			}
@@ -88,6 +79,12 @@ public class Client implements IClientCli, Runnable {
 	}
 
 	/**
+	 * @brief The thread entry & running method
+	 */
+	@Override
+	public void run() {}
+
+	/**
 	 * @brief Log-In the user
 	 * @detail Just sends the command and the server does all the work though.
 	 * @param username
@@ -101,7 +98,7 @@ public class Client implements IClientCli, Runnable {
 	 */
 	@Override
 	@Command
-	public String login(String username, String password) throws IOException {
+	public synchronized String login(String username, String password) throws IOException {
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 		this.username = username;
@@ -123,8 +120,6 @@ public class Client implements IClientCli, Runnable {
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 		serverWriter.println("!logout");
-		tcpListener.shutdownOnSuccess();
-		exit();
 		return null;
 	}
 
@@ -219,8 +214,7 @@ public class Client implements IClientCli, Runnable {
 	 */
 	@Override
 	@Command
-	public String lookup(String username) throws IOException {
-		// create a writer to send messages to the server
+	public synchronized String lookup(String username) throws IOException {
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 
@@ -240,7 +234,7 @@ public class Client implements IClientCli, Runnable {
 	 */
 	@Override
 	@Command
-	public String register(String privateAddress) throws IOException {
+	public synchronized String register(String privateAddress) throws IOException {
 		PrintWriter serverWriter = new PrintWriter(
 				tcpSocket.getOutputStream(), true);
 		InetAddress address;
@@ -271,7 +265,7 @@ public class Client implements IClientCli, Runnable {
 	 */
 	@Override
 	@Command
-	public synchronized String lastMsg() {
+	public synchronized String lastMsg() throws IOException {
 		String lastMessage = tcpListener.getLastMessage();
 		if (lastMessage == null) {
 			return LASTMSG_EMPTY;
@@ -290,11 +284,15 @@ public class Client implements IClientCli, Runnable {
 	public String exit() throws IOException {
 		shutdown = true;
 		/* Close TCP connection */
-		tcpSocket.close();
+		if (tcpSocket != null) {
+			tcpSocket.close();
+		}
 		/* Close private TCP connection */
 		closePrivateConnection();
 		/* Close UDP connection */
-		udpSocket.close();
+		if (udpSocket != null) {
+			udpSocket.close();
+		}
 		/* Shutdown pool */
 		pool.shutdown();
 		if (!pool.isShutdown()) {
@@ -303,8 +301,10 @@ public class Client implements IClientCli, Runnable {
 				throw new RuntimeException("Pool couldn't be shut down.");
 			}
 		}
+//		outputStream.println("Bye.");
 		shell.close();
-		return "Bye.";
+		/* return of a String not possible, shell already closed here. */
+		return null;
 	}
 
 	/**
@@ -324,7 +324,7 @@ public class Client implements IClientCli, Runnable {
 	 * 				Closing can cause troubles.
 	 */
 	private void closePrivateConnection() throws IOException {
-		if (privateChatServerHandler != null) {
+		if (privateChatServerHandler != null && privateChatServer != null) {
 			privateChatServer.close();
 			if (!privateChatServer.isClosed()) {
 				throw new RuntimeException("Couldn't close private TCP socket.");

@@ -34,7 +34,7 @@ public class ClientPrivateListenHandler implements Runnable {
             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
 
             String request;
-            while (!socket.isClosed()) {
+            while (true) {
                 if ((request = reader.readLine()) != null) {
                     /* private message was sent, reply with !ack */
                     outputStream.println(request);
