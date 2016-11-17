@@ -26,4 +26,6 @@ The client operates in a single thread with a threadpool that spawns 2 threads (
 
 ## Credits
 
-Martin Weise &copy; 2016
+A lot of effort was put in this code. Please pardon minor coding bugs and/or formatting issues. Have a ☕️ and [create a new issue](https://github.com/MartinWeise/DSYS-UE1/issues/new).
+
+[Martin Weise](https://github.com/MartinWeise) &copy; 2016
