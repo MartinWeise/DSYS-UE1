@@ -17,8 +17,11 @@ The client operates in a single thread with a threadpool that spawns 2 threads (
 ## Performance
 
 (+) Can operate a large set of TCP/UDP threads (as long as there are ressources)
+
 (+) Manages unused threads on its own
+
 (-) Race conditions in shell class while testing (-> framework)
+
 (-) Conditional controlling (depending on server response) is not optimal, e.g. waiting for `!ack`
 
 ## Credits
